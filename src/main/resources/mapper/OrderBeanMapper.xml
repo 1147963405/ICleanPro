@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.iclean.pt.yhgl.dao.OrderBeanMapper" >
+  <resultMap id="BaseResultMap" type="com.iclean.pt.yhgl.bean.OrderBean" >
+    <id column="sid" property="sid" jdbcType="INTEGER" />
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="customer_id" property="customerId" jdbcType="INTEGER" />
+    <result column="create_customer_id" property="createCustomerId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="VARCHAR" />
+    <result column="start_time" property="startTime" jdbcType="BIGINT" />
+    <result column="end_time" property="endTime" jdbcType="BIGINT" />
+    <result column="cash_pledge" property="cashPledge" jdbcType="INTEGER" />
+    <result column="rent" property="rent" jdbcType="INTEGER" />
+    <result column="is_notice" property="isNotice" jdbcType="INTEGER" />
+    <result column="notice_time" property="noticeTime" jdbcType="BIGINT" />
+    <result column="appendfile" property="appendfile" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="BIGINT" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    sid, id, customer_id, create_customer_id, type, status, start_time, end_time, cash_pledge, 
+    rent, is_notice, notice_time, appendfile, description, update_time
+  </sql>
+  <select id="selectBySelective" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from tb_order
+    where customer_id = #{customerId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from tb_order
+    where sid = #{sid,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.iclean.pt.yhgl.bean.OrderBean" >
+    insert into tb_order (sid, id, customer_id, 
+      create_customer_id, type, status, 
+      start_time, end_time, cash_pledge, 
+      rent, is_notice, notice_time, 
+      appendfile, description, update_time
+      )
+    values (#{sid,jdbcType=INTEGER}, #{id,jdbcType=VARCHAR}, #{customerId,jdbcType=INTEGER}, 
+      #{createCustomerId,jdbcType=INTEGER}, #{type,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR}, 
+      #{startTime,jdbcType=BIGINT}, #{endTime,jdbcType=BIGINT}, #{cashPledge,jdbcType=INTEGER}, 
+      #{rent,jdbcType=INTEGER}, #{isNotice,jdbcType=INTEGER}, #{noticeTime,jdbcType=BIGINT}, 
+      #{appendfile,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, #{updateTime,jdbcType=BIGINT}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.iclean.pt.yhgl.bean.OrderBean" >
+    insert into tb_order
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="sid != null" >
+        sid,
+      </if>
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="customerId != null" >
+        customer_id,
+      </if>
+      <if test="createCustomerId != null" >
+        create_customer_id,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="startTime != null" >
+        start_time,
+      </if>
+      <if test="endTime != null" >
+        end_time,
+      </if>
+      <if test="cashPledge != null" >
+        cash_pledge,
+      </if>
+      <if test="rent != null" >
+        rent,
+      </if>
+      <if test="isNotice != null" >
+        is_notice,
+      </if>
+      <if test="noticeTime != null" >
+        notice_time,
+      </if>
+      <if test="appendfile != null" >
+        appendfile,
+      </if>
+      <if test="description != null" >
+        description,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="sid != null" >
+        #{sid,jdbcType=INTEGER},
+      </if>
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="customerId != null" >
+        #{customerId,jdbcType=INTEGER},
+      </if>
+      <if test="createCustomerId != null" >
+        #{createCustomerId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="startTime != null" >
+        #{startTime,jdbcType=BIGINT},
+      </if>
+      <if test="endTime != null" >
+        #{endTime,jdbcType=BIGINT},
+      </if>
+      <if test="cashPledge != null" >
+        #{cashPledge,jdbcType=INTEGER},
+      </if>
+      <if test="rent != null" >
+        #{rent,jdbcType=INTEGER},
+      </if>
+      <if test="isNotice != null" >
+        #{isNotice,jdbcType=INTEGER},
+      </if>
+      <if test="noticeTime != null" >
+        #{noticeTime,jdbcType=BIGINT},
+      </if>
+      <if test="appendfile != null" >
+        #{appendfile,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.iclean.pt.yhgl.bean.OrderBean" >
+    update tb_order
+    <set >
+      <if test="id != null" >
+        id = #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="customerId != null" >
+        customer_id = #{customerId,jdbcType=INTEGER},
+      </if>
+      <if test="createCustomerId != null" >
+        create_customer_id = #{createCustomerId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="startTime != null" >
+        start_time = #{startTime,jdbcType=BIGINT},
+      </if>
+      <if test="endTime != null" >
+        end_time = #{endTime,jdbcType=BIGINT},
+      </if>
+      <if test="cashPledge != null" >
+        cash_pledge = #{cashPledge,jdbcType=INTEGER},
+      </if>
+      <if test="rent != null" >
+        rent = #{rent,jdbcType=INTEGER},
+      </if>
+      <if test="isNotice != null" >
+        is_notice = #{isNotice,jdbcType=INTEGER},
+      </if>
+      <if test="noticeTime != null" >
+        notice_time = #{noticeTime,jdbcType=BIGINT},
+      </if>
+      <if test="appendfile != null" >
+        appendfile = #{appendfile,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=BIGINT},
+      </if>
+    </set>
+    where sid = #{sid,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.iclean.pt.yhgl.bean.OrderBean" >
+    update tb_order
+    set id = #{id,jdbcType=VARCHAR},
+      customer_id = #{customerId,jdbcType=INTEGER},
+      create_customer_id = #{createCustomerId,jdbcType=INTEGER},
+      type = #{type,jdbcType=VARCHAR},
+      status = #{status,jdbcType=VARCHAR},
+      start_time = #{startTime,jdbcType=BIGINT},
+      end_time = #{endTime,jdbcType=BIGINT},
+      cash_pledge = #{cashPledge,jdbcType=INTEGER},
+      rent = #{rent,jdbcType=INTEGER},
+      is_notice = #{isNotice,jdbcType=INTEGER},
+      notice_time = #{noticeTime,jdbcType=BIGINT},
+      appendfile = #{appendfile,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=BIGINT}
+    where sid = #{sid,jdbcType=INTEGER}
+  </update>
+</mapper>

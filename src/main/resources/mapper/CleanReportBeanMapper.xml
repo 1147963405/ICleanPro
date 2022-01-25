@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iclean.pt.sbgl.dao.CleanReportBeanMapper">
+  <resultMap id="BaseResultMap" type="com.iclean.pt.sbgl.bean.CleanReportBean">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="map_id" jdbcType="INTEGER" property="mapId" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="clean_area" jdbcType="REAL" property="cleanArea" />
+    <result column="use_time" jdbcType="INTEGER" property="useTime" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="report" jdbcType="VARCHAR" property="report" />
+    <result column="update_time" jdbcType="BIGINT" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, map_id, device_id, name, clean_area, use_time, type, report, update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from tb_clean_report
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <select id="selectSelective"  resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from tb_clean_report
+    where
+    1=1
+      <if test="count==0">
+      and   device_id = #{deviceId,jdbcType=INTEGER}
+      </if>
+      <if test="count!=0">
+       and device_id = #{deviceId,jdbcType=INTEGER} LIMIT #{startIndex},#{count}
+      </if>
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from tb_clean_report
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <update id="updateByPrimaryKeySelective" parameterType="com.iclean.pt.sbgl.bean.CleanReportBean">
+    update tb_clean_report
+    <set>
+      <if test="mapId != null">
+        map_id = #{mapId,jdbcType=INTEGER},
+      </if>
+      <if test="deviceId != null">
+        device_id = #{deviceId,jdbcType=INTEGER},
+      </if>
+      <if test="name != null">
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="cleanArea != null">
+        clean_area = #{cleanArea,jdbcType=REAL},
+      </if>
+      <if test="useTime != null">
+        use_time = #{useTime,jdbcType=INTEGER},
+      </if>
+      <if test="type != null">
+        type = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="report != null">
+        report = #{report,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.iclean.pt.sbgl.bean.CleanReportBean">
+    update tb_clean_report
+    set map_id = #{mapId,jdbcType=INTEGER},
+      device_id = #{deviceId,jdbcType=INTEGER},
+      name = #{name,jdbcType=VARCHAR},
+      clean_area = #{cleanArea,jdbcType=REAL},
+      use_time = #{useTime,jdbcType=INTEGER},
+      type = #{type,jdbcType=INTEGER},
+      report = #{report,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=BIGINT}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.iclean.pt.yhgl.dao.UserTypeBeanMapper" >
+  <resultMap id="BaseResultMap" type="com.iclean.pt.yhgl.bean.UserTypeBean" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="level" property="level" jdbcType="INTEGER" />
+
+    <!--&lt;!&ndash;association:用于映射关联查询单个对象的信息
+           property:要将关联查询的用户信息映射到用户类型中那个属性&ndash;&gt;
+    <association property="userBean" javaType="com.iclean.pt.yhgl.bean.UserBean">
+      &lt;!&ndash; id:关联查询的唯一标识
+          column:指定唯一标识信息的列
+          property:映射到用户类型的哪个属性
+      &ndash;&gt;
+      <id column="uid" property="id" jdbcType="INTEGER" />
+      <result column="name" property="name" jdbcType="VARCHAR" />
+      <result column="user_name" property="userName" jdbcType="VARCHAR" />
+      <result column="passwd" property="passwd" jdbcType="VARCHAR" />
+      <result column="phone" property="phone" jdbcType="VARCHAR" />
+      <result column="contact_person" property="contactPerson" jdbcType="VARCHAR" />
+      <result column="email" property="email" jdbcType="VARCHAR" />
+      <result column="type_id" property="typeId" jdbcType="INTEGER" />
+      <result column="customer_id" property="customerId" jdbcType="INTEGER" />
+      <result column="status" property="status" jdbcType="INTEGER" />
+      <result column="description" property="description" jdbcType="VARCHAR" />
+      <result column="update_time" property="updateTime" jdbcType="BIGINT" />
+    </association>
+    &lt;!&ndash;查询用户验证信息&ndash;&gt;
+    <association property="UserAuthorityBean" javaType="com.iclean.pt.yhgl.bean.UserAuthorityBean">
+      <id column="Auid" property="id"/>
+      <result column="user_type_id" property="userTypeId" jdbcType="INTEGER" />
+      <result column="monitor_auth" property="monitorAuth" jdbcType="INTEGER" />
+      <result column="customer_manger_auth" property="customerMangerAuth" jdbcType="INTEGER" />
+      <result column="device_manger_auth" property="deviceMangerAuth" jdbcType="INTEGER" />
+      <result column="map_manger_auth" property="mapMangerAuth" jdbcType="INTEGER" />
+      <result column="task_manger_auth" property="taskMangerAuth" jdbcType="INTEGER" />
+      <result column="video_manger_auth" property="videoMangerAuth" jdbcType="INTEGER" />
+      <result column="report_data_auth" property="reportDataAuth" jdbcType="INTEGER" />
+      <result column="upgrade_auth" property="upgradeAuth" jdbcType="INTEGER" />
+      <result column="order_auth" property="orderAuth" jdbcType="INTEGER" />
+      <result column="gps_data_auth" property="gpsDataAuth" jdbcType="INTEGER" />
+    </association>-->
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, name, level
+  </sql>
+<!--嵌套查询-->
+ <!-- <select id="selectAll" resultMap="BaseResultMap">
+     select
+                t2.monitor_auth,
+				t2.customer_manger_auth,
+				t2.device_manger_auth,
+				t2.map_manger_auth,
+				t2.task_manger_auth,
+				t2.video_manger_auth,
+				t2.report_data_auth,
+				t2.upgrade_auth,
+				t2.order_auth,
+				t2.gps_data_auth,
+                t.`level`,
+				t1.name,
+				t1.id
+			   from tb_user_type t join tb_user t1 on t.id=t1.type_id join tb_user_authority t2 on t.id=t2.user_type_id
+    </select>-->
+
+    <select id="selectList" resultMap="BaseResultMap" parameterType="com.iclean.pt.yhgl.bean.UserTypeBean" >
+    select 
+    <include refid="Base_Column_List" />
+    from tb_user_type
+  </select>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from tb_user_type where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from tb_user_type
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.iclean.pt.yhgl.bean.UserTypeBean" >
+    insert into tb_user_type (id, name, level
+      )
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{level,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.iclean.pt.yhgl.bean.UserTypeBean" >
+    insert into tb_user_type
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="level != null" >
+        level,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="level != null" >
+        #{level,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.iclean.pt.yhgl.bean.UserTypeBean" >
+    update tb_user_type
+    <set >
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="level != null" >
+        level = #{level,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+</mapper>

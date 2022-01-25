@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.iclean.pt.sbgl.dao.TaskBeanMapper" >
+  <resultMap id="BaseResultMap" type="com.iclean.pt.sbgl.bean.TaskBean" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="map_id" property="mapId" jdbcType="INTEGER" />
+    <result column="device_id" property="deviceId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="work_day" property="workDay" jdbcType="INTEGER" />
+    <result column="work_time" property="workTime" jdbcType="INTEGER" />
+    <result column="work_type" property="workType" jdbcType="INTEGER" />
+    <result column="loop_count" property="loopCount" jdbcType="INTEGER" />
+    <result column="parameter" property="parameter" jdbcType="VARCHAR" />
+    <result column="work_parts" property="workParts" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="BIGINT" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, name, map_id, device_id, type, work_day, work_time, work_type, loop_count, parameter, 
+    work_parts, update_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from tb_task
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <select id="selectSelective" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from tb_task
+    <where>
+      <if test="count==0">
+        device_id = #{deviceId,jdbcType=INTEGER}
+      </if>
+      <if test="count!=0">
+        device_id = #{deviceId,jdbcType=INTEGER} LIMIT #{startIndex},#{count}
+      </if>
+    </where>
+  </select>
+
+  <select id="selectList" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from tb_task
+    where
+      1=1
+      <if test="count!=0">
+         LIMIT #{startIndex},#{count}
+      </if>
+  </select>
+
+  <select id="selectBySelective" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from tb_task
+    where
+    1=1
+    <if test="workType=='null'">
+      and  device_id = #{deviceId,jdbcType=INTEGER}
+    </if>
+    <if test="workType!='null'">
+      and  work_type = #{workType,jdbcType=INTEGER}  and  device_id = #{deviceId,jdbcType=INTEGER}
+    </if>
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from tb_task
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.iclean.pt.sbgl.bean.TaskBean" >
+    insert into tb_task (id, name, map_id, 
+      device_id, type, work_day, 
+      work_time, work_type, loop_count, 
+      parameter, work_parts, update_time
+      )
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{mapId,jdbcType=INTEGER}, 
+      #{deviceId,jdbcType=INTEGER}, #{type,jdbcType=INTEGER}, #{workDay,jdbcType=INTEGER}, 
+      #{workTime,jdbcType=INTEGER}, #{workType,jdbcType=INTEGER}, #{loopCount,jdbcType=INTEGER}, 
+      #{parameter,jdbcType=VARCHAR}, #{workParts,jdbcType=VARCHAR}, #{updateTime,jdbcType=BIGINT}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.iclean.pt.sbgl.bean.TaskBean" >
+    insert into tb_task
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="mapId != null" >
+        map_id,
+      </if>
+      <if test="deviceId != null" >
+        device_id,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="workDay != null" >
+        work_day,
+      </if>
+      <if test="workTime != null" >
+        work_time,
+      </if>
+      <if test="workType != null" >
+        work_type,
+      </if>
+      <if test="loopCount != null" >
+        loop_count,
+      </if>
+      <if test="parameter != null" >
+        parameter,
+      </if>
+      <if test="workParts != null" >
+        work_parts,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="mapId != null" >
+        #{mapId,jdbcType=INTEGER},
+      </if>
+      <if test="deviceId != null" >
+        #{deviceId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="workDay != null" >
+        #{workDay,jdbcType=INTEGER},
+      </if>
+      <if test="workTime != null" >
+        #{workTime,jdbcType=INTEGER},
+      </if>
+      <if test="workType != null" >
+        #{workType,jdbcType=INTEGER},
+      </if>
+      <if test="loopCount != null" >
+        #{loopCount,jdbcType=INTEGER},
+      </if>
+      <if test="parameter != null" >
+        #{parameter,jdbcType=VARCHAR},
+      </if>
+      <if test="workParts != null" >
+        #{workParts,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.iclean.pt.sbgl.bean.TaskBean" >
+    update tb_task
+    <set >
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="mapId != null" >
+        map_id = #{mapId,jdbcType=INTEGER},
+      </if>
+      <if test="deviceId != null" >
+        device_id = #{deviceId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="workDay != null" >
+        work_day = #{workDay,jdbcType=INTEGER},
+      </if>
+      <if test="workTime != null" >
+        work_time = #{workTime,jdbcType=INTEGER},
+      </if>
+      <if test="workType != null" >
+        work_type = #{workType,jdbcType=INTEGER},
+      </if>
+      <if test="loopCount != null" >
+        loop_count = #{loopCount,jdbcType=INTEGER},
+      </if>
+      <if test="parameter != null" >
+        parameter = #{parameter,jdbcType=VARCHAR},
+      </if>
+      <if test="workParts != null" >
+        work_parts = #{workParts,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.iclean.pt.sbgl.bean.TaskBean" >
+    update tb_task
+    set name = #{name,jdbcType=VARCHAR},
+      map_id = #{mapId,jdbcType=INTEGER},
+      device_id = #{deviceId,jdbcType=INTEGER},
+      type = #{type,jdbcType=INTEGER},
+      work_day = #{workDay,jdbcType=INTEGER},
+      work_time = #{workTime,jdbcType=INTEGER},
+      work_type = #{workType,jdbcType=INTEGER},
+      loop_count = #{loopCount,jdbcType=INTEGER},
+      parameter = #{parameter,jdbcType=VARCHAR},
+      work_parts = #{workParts,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=BIGINT}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

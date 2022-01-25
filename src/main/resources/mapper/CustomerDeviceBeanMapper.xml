@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.iclean.pt.yhgl.dao.CustomerDeviceBeanMapper" >
+  <resultMap id="BaseResultMap" type="com.iclean.pt.yhgl.bean.CustomerDeviceBean" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="customer_id" property="customerId" jdbcType="INTEGER" />
+    <result column="device_id" property="deviceId" jdbcType="INTEGER" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+
+    <!--配置关联中间表-->
+    <association property="deviceInfoBean" javaType="com.iclean.pt.yhgl.bean.DeviceInfoBean" >
+      <id column="id" property="id"  jdbcType="INTEGER"/>
+      <result column="name" property="name"  jdbcType="VARCHAR"/>
+      <result column="serial" property="serial"  jdbcType="VARCHAR"/>
+      <result column="address" property="address"  jdbcType="VARCHAR"/>
+      <result column="type_id" property="typeId"  jdbcType="VARCHAR"/>
+      <result column="status" property="status"  jdbcType="VARCHAR"/>
+      <result column="models" property="models"  jdbcType="VARCHAR"/>
+      <result column="scene" property="scene"  jdbcType="VARCHAR"/>
+      <result column="module_info" property="moduleInfo"  jdbcType="VARCHAR"/>
+      <result column="last_located_address" property="lastLocatedAddress"  jdbcType="VARCHAR"/>
+      <result column="description" property="description"  jdbcType="VARCHAR"/>
+      <result column="update_time" property="updateTime"  jdbcType="BIGINT"/>
+    </association>
+    <association property="customerBean" javaType="com.iclean.pt.yhgl.bean.CustomerBean">
+      <id column="id" property="id" />
+      <result column="customer_group_id" property="customerGroupId" jdbcType="INTEGER" />
+      <result column="name" property="name" jdbcType="VARCHAR"/>
+      <result column="email" property="email" jdbcType="VARCHAR"/>
+      <result column="phone" property="phone" jdbcType="VARCHAR"/>
+      <result column="address" property="address" jdbcType="VARCHAR"/>
+      <result column="contact_person" property="contactPerson" jdbcType="VARCHAR"/>
+      <result column="leader_person" property="leaderPerson" jdbcType="VARCHAR"/>
+      <result column="description" property="description" jdbcType="VARCHAR"/>
+      <result column="update_time" property="updateTime" jdbcType="BIGINT"/>
+    </association>
+  </resultMap>
+
+  <sql id="base">
+    cd.id,
+    cd.customer_id,
+    cd.device_id
+</sql>
+
+  <sql id="deviceInfoColumn">
+    d.id,
+    d.name,
+    d.serial,
+    d.address,
+    d.type_id,
+    d.status,
+    d.models,
+    d.scene,
+    d.module_info,
+    d.last_located_address,
+    d.description,
+    d.update_time
+</sql>
+
+  <sql id="customerColumn">
+      cb.id,
+      cb.customer_group_id,
+      cb.name,
+      cb.email,
+      cb.phone,
+      cb.address,
+      cb.contact_person,
+      cb.leader_person,
+      cb.description,
+      cb.update_time
+</sql>
+
+  <select id="selectCustomerWithDevices" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+    select
+    <include refid="base" />,
+    <include refid="deviceInfoColumn" />
+    from tb_customer_device cd
+   left JOIN tb_customer cb on cb.id=cd.customer_id
+   left join tb_device_info d on
+    d.id=cd.device_id
+    where
+    cd.customer_id=#{customerId}
+  </select>
+
+  <select id="selectByDeviceId"  resultType="java.util.Map"  parameterType="java.lang.Integer">
+    select
+    cd.customer_id as id,cb.name
+    from tb_customer_device cd
+   JOIN tb_customer cb on cb.id=cd.customer_id
+    where
+    cd.device_id=#{deviceId}
+  </select>
+
+  <insert id="insert" parameterType="com.iclean.pt.yhgl.bean.CustomerDeviceBean" >
+    insert into tb_customer_device (id, customer_id, device_id,
+      description )
+    values (#{id,jdbcType=INTEGER}, #{customerId,jdbcType=INTEGER}, #{deviceId,jdbcType=INTEGER},
+      #{description,jdbcType=VARCHAR}  )
+  </insert>
+
+</mapper>

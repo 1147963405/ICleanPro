@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.iclean.pt.sbgl.dao.ModuleVersionBeanMapper" >
+  <resultMap id="BaseResultMap" type="com.iclean.pt.sbgl.bean.ModuleVersionBean" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="system_id" property="systemId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="support_type" property="supportType" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="ver_number" property="verNumber" jdbcType="INTEGER" />
+    <result column="file_name" property="fileName" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="BIGINT" />
+    <result column="update_time" property="updateTime" jdbcType="BIGINT" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, system_id, type, support_type, name, ver_number, file_name, description, create_time, 
+    update_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from tb_module_version
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectBySelective" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from tb_module_version
+    where type = #{param1}  LIMIT #{param2},#{param3}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from tb_module_version
+    where id = #{id,jdbcType=INTEGER} and type = #{type,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.iclean.pt.sbgl.bean.ModuleVersionBean" >
+    insert into tb_module_version (id, system_id, type, 
+      support_type, name, ver_number, 
+      file_name, description, create_time, 
+      update_time)
+    values (#{id,jdbcType=INTEGER}, #{systemId,jdbcType=INTEGER}, #{type,jdbcType=INTEGER}, 
+      #{supportType,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{verNumber,jdbcType=INTEGER}, 
+      #{fileName,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, #{createTime,jdbcType=BIGINT}, 
+      #{updateTime,jdbcType=BIGINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.iclean.pt.sbgl.bean.ModuleVersionBean" >
+    insert into tb_module_version
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="systemId != null" >
+        system_id,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="supportType != null" >
+        support_type,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="verNumber != null" >
+        ver_number,
+      </if>
+      <if test="fileName != null" >
+        file_name,
+      </if>
+      <if test="description != null" >
+        description,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="systemId != null" >
+        #{systemId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="supportType != null" >
+        #{supportType,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="verNumber != null" >
+        #{verNumber,jdbcType=INTEGER},
+      </if>
+      <if test="fileName != null" >
+        #{fileName,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=BIGINT},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.iclean.pt.sbgl.bean.ModuleVersionBean" >
+    update tb_module_version
+    <set >
+      <if test="systemId != null" >
+        system_id = #{systemId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="supportType != null" >
+        support_type = #{supportType,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="verNumber != null" >
+        ver_number = #{verNumber,jdbcType=INTEGER},
+      </if>
+      <if test="fileName != null" >
+        file_name = #{fileName,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=BIGINT},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.iclean.pt.sbgl.bean.ModuleVersionBean" >
+    update tb_module_version
+    set system_id = #{systemId,jdbcType=INTEGER},
+      type = #{type,jdbcType=INTEGER},
+      support_type = #{supportType,jdbcType=INTEGER},
+      name = #{name,jdbcType=VARCHAR},
+      ver_number = #{verNumber,jdbcType=INTEGER},
+      file_name = #{fileName,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=BIGINT},
+      update_time = #{updateTime,jdbcType=BIGINT}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

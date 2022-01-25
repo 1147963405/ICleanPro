@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.iclean.pt.yhgl.dao.UserAuthorityBeanMapper" >
+  <resultMap id="BaseResultMap" type="com.iclean.pt.yhgl.bean.UserAuthorityBean" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="user_type_id" property="userTypeId" jdbcType="INTEGER" />
+    <result column="monitor_auth" property="monitorAuth" jdbcType="INTEGER" />
+    <result column="customer_manger_auth" property="customerMangerAuth" jdbcType="INTEGER" />
+    <result column="device_manger_auth" property="deviceMangerAuth" jdbcType="INTEGER" />
+    <result column="map_manger_auth" property="mapMangerAuth" jdbcType="INTEGER" />
+    <result column="task_manger_auth" property="taskMangerAuth" jdbcType="INTEGER" />
+    <result column="video_manger_auth" property="videoMangerAuth" jdbcType="INTEGER" />
+    <result column="report_data_auth" property="reportDataAuth" jdbcType="INTEGER" />
+    <result column="upgrade_auth" property="upgradeAuth" jdbcType="INTEGER" />
+    <result column="order_auth" property="orderAuth" jdbcType="INTEGER" />
+    <result column="gps_data_auth" property="gpsDataAuth" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, user_type_id, monitor_auth, customer_manger_auth, device_manger_auth, map_manger_auth,
+    task_manger_auth, video_manger_auth, report_data_auth, upgrade_auth, order_auth,
+    gps_data_auth
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from tb_user_authority
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <select id="selectByUserTypeId" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from tb_user_authority
+    where user_type_id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from tb_user_authority
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.iclean.pt.yhgl.bean.UserAuthorityBean" >
+    insert into tb_user_authority (id, user_type_id, monitor_auth,
+      customer_manger_auth, device_manger_auth, map_manger_auth,
+      task_manger_auth, video_manger_auth, report_data_auth,
+      upgrade_auth, order_auth, gps_data_auth
+      )
+    values (#{id,jdbcType=INTEGER}, #{userTypeId,jdbcType=INTEGER}, #{monitorAuth,jdbcType=INTEGER},
+      #{customerMangerAuth,jdbcType=INTEGER}, #{deviceMangerAuth,jdbcType=INTEGER}, #{mapMangerAuth,jdbcType=INTEGER},
+      #{taskMangerAuth,jdbcType=INTEGER}, #{videoMangerAuth,jdbcType=INTEGER}, #{reportDataAuth,jdbcType=INTEGER},
+      #{upgradeAuth,jdbcType=INTEGER}, #{orderAuth,jdbcType=INTEGER}, #{gpsDataAuth,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.iclean.pt.yhgl.bean.UserAuthorityBean" >
+    insert into tb_user_authority
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="userTypeId != null" >
+        user_type_id,
+      </if>
+      <if test="monitorAuth != null" >
+        monitor_auth,
+      </if>
+      <if test="customerMangerAuth != null" >
+        customer_manger_auth,
+      </if>
+      <if test="deviceMangerAuth != null" >
+        device_manger_auth,
+      </if>
+      <if test="mapMangerAuth != null" >
+        map_manger_auth,
+      </if>
+      <if test="taskMangerAuth != null" >
+        task_manger_auth,
+      </if>
+      <if test="videoMangerAuth != null" >
+        video_manger_auth,
+      </if>
+      <if test="reportDataAuth != null" >
+        report_data_auth,
+      </if>
+      <if test="upgradeAuth != null" >
+        upgrade_auth,
+      </if>
+      <if test="orderAuth != null" >
+        order_auth,
+      </if>
+      <if test="gpsDataAuth != null" >
+        gps_data_auth,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="userTypeId != null" >
+        #{userTypeId,jdbcType=INTEGER},
+      </if>
+      <if test="monitorAuth != null" >
+        #{monitorAuth,jdbcType=INTEGER},
+      </if>
+      <if test="customerMangerAuth != null" >
+        #{customerMangerAuth,jdbcType=INTEGER},
+      </if>
+      <if test="deviceMangerAuth != null" >
+        #{deviceMangerAuth,jdbcType=INTEGER},
+      </if>
+      <if test="mapMangerAuth != null" >
+        #{mapMangerAuth,jdbcType=INTEGER},
+      </if>
+      <if test="taskMangerAuth != null" >
+        #{taskMangerAuth,jdbcType=INTEGER},
+      </if>
+      <if test="videoMangerAuth != null" >
+        #{videoMangerAuth,jdbcType=INTEGER},
+      </if>
+      <if test="reportDataAuth != null" >
+        #{reportDataAuth,jdbcType=INTEGER},
+      </if>
+      <if test="upgradeAuth != null" >
+        #{upgradeAuth,jdbcType=INTEGER},
+      </if>
+      <if test="orderAuth != null" >
+        #{orderAuth,jdbcType=INTEGER},
+      </if>
+      <if test="gpsDataAuth != null" >
+        #{gpsDataAuth,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.iclean.pt.yhgl.bean.UserAuthorityBean" >
+    update tb_user_authority
+    <set >
+      <if test="userTypeId != null" >
+        user_type_id = #{userTypeId,jdbcType=INTEGER},
+      </if>
+      <if test="monitorAuth != null" >
+        monitor_auth = #{monitorAuth,jdbcType=INTEGER},
+      </if>
+      <if test="customerMangerAuth != null" >
+        customer_manger_auth = #{customerMangerAuth,jdbcType=INTEGER},
+      </if>
+      <if test="deviceMangerAuth != null" >
+        device_manger_auth = #{deviceMangerAuth,jdbcType=INTEGER},
+      </if>
+      <if test="mapMangerAuth != null" >
+        map_manger_auth = #{mapMangerAuth,jdbcType=INTEGER},
+      </if>
+      <if test="taskMangerAuth != null" >
+        task_manger_auth = #{taskMangerAuth,jdbcType=INTEGER},
+      </if>
+      <if test="videoMangerAuth != null" >
+        video_manger_auth = #{videoMangerAuth,jdbcType=INTEGER},
+      </if>
+      <if test="reportDataAuth != null" >
+        report_data_auth = #{reportDataAuth,jdbcType=INTEGER},
+      </if>
+      <if test="upgradeAuth != null" >
+        upgrade_auth = #{upgradeAuth,jdbcType=INTEGER},
+      </if>
+      <if test="orderAuth != null" >
+        order_auth = #{orderAuth,jdbcType=INTEGER},
+      </if>
+      <if test="gpsDataAuth != null" >
+        gps_data_auth = #{gpsDataAuth,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.iclean.pt.yhgl.bean.UserAuthorityBean" >
+    update tb_user_authority
+    set user_type_id = #{userTypeId,jdbcType=INTEGER},
+      monitor_auth = #{monitorAuth,jdbcType=INTEGER},
+      customer_manger_auth = #{customerMangerAuth,jdbcType=INTEGER},
+      device_manger_auth = #{deviceMangerAuth,jdbcType=INTEGER},
+      map_manger_auth = #{mapMangerAuth,jdbcType=INTEGER},
+      task_manger_auth = #{taskMangerAuth,jdbcType=INTEGER},
+      video_manger_auth = #{videoMangerAuth,jdbcType=INTEGER},
+      report_data_auth = #{reportDataAuth,jdbcType=INTEGER},
+      upgrade_auth = #{upgradeAuth,jdbcType=INTEGER},
+      order_auth = #{orderAuth,jdbcType=INTEGER},
+      gps_data_auth = #{gpsDataAuth,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
