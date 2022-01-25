@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-//@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST})
-//@RequestMapping("/iclean-cloud")
 public class TaskController {
 
 //    @Autowired

@@ -344,7 +344,7 @@ public class DeviceController {
         /*通过JSON转换为下划线格式参数*/
         config.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
         String toJSON = JSON.toJSONString(map, config);
-        JSONObject deviceM = JSONObject.parseObject(toJSON);//json转map
+        JSONObject deviceM = JSONObject.parseObject(toJSON);
         return Result.ok().data(deviceM).msg("");
     }
 
