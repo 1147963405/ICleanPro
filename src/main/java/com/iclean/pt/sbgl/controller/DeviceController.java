@@ -42,8 +42,7 @@ public class DeviceController {
     private PathsService pathsService;
     @Autowired
     private MapsService mapsService;
-  /*  @Autowired
-    private UserService userService;*/
+
     @Autowired
     private CustomerService customerService;
     @Autowired
