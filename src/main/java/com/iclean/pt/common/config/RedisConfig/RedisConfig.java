@@ -186,7 +186,7 @@ public class RedisConfig  extends CachingConfigurerSupport {
      * @return: com.springboot.demo.base.utils.RedisUtil
      * @Description: 注入封装RedisTemplate
      */
-   /* @Bean(name = "redisUtil")
+   /* @Bean
     public RedisUtil redisUtil(RedisTemplate redisTemplate) {
         log.info("RedisUtil注入成功！");
         RedisUtil redisUtil = new RedisUtil();

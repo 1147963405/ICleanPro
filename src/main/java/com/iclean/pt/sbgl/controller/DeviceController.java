@@ -208,6 +208,7 @@ public class DeviceController {
      **/
     @RequestMapping(value = "/device/lists", method = RequestMethod.POST)
     public Result getDeviceList(@RequestParam  Map<String,String> deviceList)  {
+        logger.info("获取设备列表："+deviceList);
         /*通过customer_id筛选：{"customer_id":0,"start_index":0,"count":20,"count_flag":true}: */
         /*通过type_id筛选：{"customer_id":0,"start_index":1,"count":20,"count_flag":true,"type_id":3}: */
         /* 通过status筛选:{"customer_id":0,"start_index":0,"count":20,"count_flag":true,"status":0}:
@@ -240,7 +241,7 @@ public class DeviceController {
 
             for (int i=0;i<dibs.size();i++) {
 //                Integer id = dibs.get(i).getId();
-                for (Object km : redisUtil.hmget(Constants.Mqtt.TOPIC_SUB_ROBOT_MSG.getValue()).keySet()) {
+                for (Object km : redisUtil.hmget("message").keySet()) {
                     /*通过device_id对比数据库中的设备与线上的设备，并回显的数据为device_id相同的线上设备信息*/
                     if (dibs.get(i).getId().equals(km) || dibs.get(i).getId()==km) {
 //                        lst.add(dibs.get(i).getId());
@@ -503,6 +504,7 @@ public class DeviceController {
      **/
     @PostMapping(value = "/robot/task_status")
     public Result updateDeviceStatus(@RequestParam Map<String,Object> mp) {
+        logger.info("更新设备状态："+mp);
 
         /*{
         "device_id": 1,
@@ -641,6 +643,7 @@ public class DeviceController {
      **/
     @RequestMapping(value = "/alarm/lists", method = RequestMethod.POST)
     public Result getAarmLists(@RequestParam Map<String,Object> map) {
+        logger.info("获取报警列表："+map);
 /*{"user_id":1,"start_index":0,"beginTime":"","endTime":"","count":100,"count_flag":true,"status":0}
 {
 context: "急停按下"
@@ -732,6 +735,7 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
      **/
     @RequestMapping(value = "/task/lists", method = RequestMethod.POST)
     public Result getTaskList(@RequestParam Map<String,Object> map){
+        logger.info("获取任务列表:"+map);
         /*{"user_id":1,"start_index":0,"count":10}:
          * 条件筛选：{"user_id":1,"start_index":0,"count":10,"device_type_id":1}: 设备类型 device_type_id
            {"user_id":1,"start_index":0,"count":10,"device_status":"1"}:  设备状态 device_status
@@ -1173,7 +1177,7 @@ name: 20211216t*/
      **/
     @PostMapping(value = "/clean_report/info")
     public Result getCleanReport(@RequestParam Map<String,Object> cleanReportMap) {
-
+logger.info("获取指定设备下的清洁报告:"+cleanReportMap);
         Map<String,Object> crMap=null;
         for (String km : cleanReportMap.keySet()) {
             crMap = JSONObject.parseObject(km);

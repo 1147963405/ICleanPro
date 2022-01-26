@@ -1,5 +1,6 @@
 package com.iclean.pt.common.config.Spring;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.iclean.pt.utils.Constants;
 import com.iclean.pt.utils.RedisUtil;
@@ -19,14 +20,19 @@ import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.MessagingException;
+
+import javax.annotation.Resource;
 
 
 @Configuration
 public class SpringConfig {
 
-    static RedisUtil redisUtil;
+@Autowired
+   private  RedisUtil redisUtil;
 
     /*****
      * 创建MqttPahoClientFactory，设置MQTT Broker连接属性，如果使用SSL验证，也在这里设置。
@@ -40,9 +46,10 @@ public class SpringConfig {
         // 设置是否清空session,这里如果设置为false表示服务器会保留客户端的连接记录，设置为true表示每次连接到服务器都以新的身份连接
         options.setCleanSession(false);
         // 设置超时时间
-        options.setConnectionTimeout(10);
+         options.setConnectionTimeout(10);
         // 设置自动重连, 其它具体参数可以查看MqttConnectOptions
         options.setAutomaticReconnect(true);
+        factory.setConnectionOptions(options);
         return factory;
     }
 
@@ -50,7 +57,6 @@ public class SpringConfig {
     public MessageChannel mqttInputChannel() {
         return new DirectChannel();
     }
-
 
     @Bean
     public MessageProducer inbound() {
@@ -87,21 +93,22 @@ public class SpringConfig {
     @Bean
     //ServiceActivator注解表明当前方法用于处理MQTT消息，inputChannel参数指定了用于接收消息信息的channel。
     @ServiceActivator(inputChannel = "mqttInputChannel")
-    public static MessageHandler handler() {
+    public MessageHandler handler() {
+
         return message -> {
-            String payload = message.getPayload().toString();
+            JSONObject parseObject = JSONObject.parseObject(String.valueOf(message.getPayload()));
             String topic = message.getHeaders().get("mqtt_receivedTopic").toString();
             // 根据topic分别进行消息处理。
             if (topic.contains("message")) {
-                JSONObject parseObject = JSONObject.parseObject(payload);
-                redisUtil.hset("message", String.valueOf(parseObject.get("device_id")),parseObject);
+//                JSONObject parseObject = JSONObject.parseObject(payload);
+                redisUtil.hset("message", String.valueOf(parseObject.get("device_id")),message.getPayload());
             } else if (topic.contains("messageEx")) {
-                JSONObject parseObject = JSONObject.parseObject(payload);
-                redisUtil.hset("messageEx", String.valueOf(parseObject.get("device_id")),parseObject);
+//                JSONObject parseObject = JSONObject.parseObject(payload);
+                redisUtil.hset("messageEx", String.valueOf(parseObject.get("device_id")),message.getPayload());
             } else if (topic.equals(Constants.Mqtt.TOPIC_SUB_ROBOT_STATUS.getValue())){
-                JSONObject parseObject = JSONObject.parseObject(payload);
+//                JSONObject parseObject = JSONObject.parseObject(payload);
                 if(parseObject!=null){
-                    redisUtil.hset(topic, String.valueOf(parseObject.get("device_id")),parseObject);
+                    redisUtil.hset(topic, String.valueOf(parseObject.get("device_id")),message.getPayload());
                 }
             }
         };

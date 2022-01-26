@@ -21,5 +21,15 @@ public class CustomerDeviceBean {
     private CustomerBean customerBean;
     private DeviceInfoBean deviceInfoBean;
 
-
+    @Override
+    public String toString() {
+        return "CustomerDeviceBean{" +
+                "id=" + id +
+                ", customerId=" + customerId +
+                ", deviceId=" + deviceId +
+                ", description='" + description + '\'' +
+                ", customerBean=" + customerBean +
+                ", deviceInfoBean=" + deviceInfoBean +
+                '}';
+    }
 }
