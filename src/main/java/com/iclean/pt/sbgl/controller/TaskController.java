@@ -1,8 +1,10 @@
 package com.iclean.pt.sbgl.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.iclean.pt.utils.Result;
+import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
@@ -38,5 +40,34 @@ public class TaskController {
         //……
 
 return null;
+    }
+
+    public static void main(String[] args){
+
+        String s1="{start_index=0, count=20, count_flag=true, customer_id=0}";
+        String s2="{{\"customer_id\":0,\"start_index\":0,\"count\":20,\"count_flag\":true}=}";
+//        String s1s = s2.replaceAll("[=]$", "");
+        String subStr = s2.substring(0, s2.length() - 2);
+        String substring1 = subStr.substring(1);
+        String replace1 = s2.replace("=", ":");
+        System.out.println("asdf"+substring1);
+        int i = s1.lastIndexOf(":");
+        JSONObject jsonObject=null;
+//{"start_index":0,"count":20,"count_flag":true,"customer_id":0}
+//{"start_index":0,"count":20,"count_flag":true,"customer_id":0}
+       /* StringBuffer stringBuffer1=new StringBuffer(s2.lastIndexOf(":"));
+        StringBuffer stringBuffer= stringBuffer1.deleteCharAt(i);*/
+//        System.out.println(s1);
+        if(i==-1){
+            String replace = s1.replace("=", ":");
+            jsonObject = JSONObject.parseObject(replace);
+
+        }else {
+            String substring = s2.substring(0, s2.length() - 1);
+            jsonObject = JSONObject.parseObject(substring);
+        }
+//        System.out.println(stringBuffer);
+        System.out.println(jsonObject);
+
     }
 }

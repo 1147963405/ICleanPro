@@ -14,6 +14,7 @@ import com.iclean.pt.sbgl.service.MapsService;
 import com.iclean.pt.sbgl.service.PathsService;
 import com.iclean.pt.sbgl.service.PositionService;
 import com.iclean.pt.utils.Constants;
+import com.iclean.pt.utils.RedisUtil;
 import com.iclean.pt.utils.Result;
 import com.iclean.pt.yhgl.bean.CustomerBean;
 import com.iclean.pt.yhgl.bean.CustomerDeviceBean;
@@ -24,7 +25,6 @@ import com.iclean.pt.yhgl.service.DeviceService;
 import com.iclean.pt.yhgl.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import redis.clients.jedis.Jedis;
 
 import java.util.*;
 
@@ -37,7 +37,6 @@ import static java.lang.Integer.parseInt;
 public class MapsController {
 
      static SerializeConfig config=new SerializeConfig() ;
-    static Jedis jedis=new Jedis(Constants.Jedis.SERVER_HOST.getValue(),Integer.parseInt(Constants.Jedis.SERVER_PORT.getValue()));
 
     @Autowired
     private MapsService mapsService;
@@ -53,6 +52,8 @@ public class MapsController {
     private DeviceService deviceService;
     @Autowired
     private PositionService positionService;
+    @Autowired
+    private RedisUtil redisUtil;
 
     /**
      * @param
@@ -63,11 +64,17 @@ public class MapsController {
     @RequestMapping(value = "/map/lists",method = RequestMethod.POST)
     public Result getMapsList( @RequestParam  Map<String,Object> mp) {
         /*{"user_id":1,"start_index":0,"count":10,"count_flag":true}: */
-        JSONObject mMap=null;
-        for (String km : mp.keySet()) {
-            mMap = JSONObject.parseObject(km);
+        JSONObject jsonObj=null;
+        int lastIndexOf = mp.toString().lastIndexOf(":");
+        if(lastIndexOf==-1){
+            String jsonStr = mp.toString().replace("=", ":");
+            jsonObj=JSONObject.parseObject(jsonStr);
+        }else {
+            String subStr = mp.toString().substring(0, mp.toString().length() - 2);
+            jsonObj = JSONObject.parseObject(subStr.substring(1));
         }
-        JSONObject jsonObject = JSONObject.parseObject(jedis.get(String.valueOf(mMap.get("user_id"))));
+        Object user = redisUtil.hget("users", String.valueOf(jsonObj.get("user_id")));
+        JSONObject jsonObject = JSONObject.parseObject((String) user);
         CustomerBean customerBean = customerService.selectByPrimaryKey((Integer) jsonObject.get("customerId"));//通过user获取指定customer客户
         List<CustomerBean> cbs =null;
         if(customerBean==null){
@@ -102,7 +109,7 @@ public class MapsController {
                 MapsDeviceBean mapsDeviceBean = new MapsDeviceBean();
                 mapsDeviceBean.setDeviceId(mb.getDeviceId());
                 mapsDeviceBean.setDeviceName(String.valueOf( entry.getValue()));
-                mapsDeviceBean.setUserId((Integer) mMap.get("user_id"));
+                mapsDeviceBean.setUserId((Integer) jsonObj.get("user_id"));
 //                组装图片路径
                 String path = Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + mb.getDeviceId() + "/" + mb.getUuid() + "/map.png";
 //                组装下载路径
@@ -114,8 +121,8 @@ public class MapsController {
                 mdb.add(mapsDeviceBean);
             }
         }
-        int start_index = parseInt(String.valueOf(mMap.get("start_index")));
-        int count = parseInt(String.valueOf(mMap.get("count")));
+        int start_index = parseInt(String.valueOf(jsonObj.get("start_index")));
+        int count = parseInt(String.valueOf(jsonObj.get("count")));
         /*分页*/
         List<MapsDeviceBean> jsonBeanList = null;
         if (start_index==0) {
@@ -140,7 +147,7 @@ public class MapsController {
         config.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
         String json = JSON.toJSONString(map, config);
         JSONObject jsonMap = JSONObject.parseObject(json);//json转map
-        return Result.ok().data(jsonMap).msg("获取地图列表成功");
+        return Result.ok().data(jsonMap).msg("");
     }
 
     /**
@@ -152,11 +159,16 @@ public class MapsController {
     @RequestMapping(value = "/map/list",method = RequestMethod.POST)
     public Result getMapInfo( @RequestParam  Map<String,Object> mp) {
         /*{"user_id":1,"start_index":0,"robot_name":"南京国金中心1","count":100,"count_flag":true}: */
-        JSONObject mMapInfo=null;
-        for (String km : mp.keySet()) {
-            mMapInfo = JSONObject.parseObject(km);
+        JSONObject jsonObj=null;
+        int lastIndexOf = mp.toString().lastIndexOf(":");
+        if(lastIndexOf==-1){
+            String jsonStr = mp.toString().replace("=", ":");
+            jsonObj=JSONObject.parseObject(jsonStr);
+        }else {
+            String subStr = mp.toString().substring(0, mp.toString().length() - 2);
+            jsonObj = JSONObject.parseObject(subStr.substring(1));
         }
-        DeviceInfoBean deviceInfoBean = deviceService.selectByIdOrName(null, String.valueOf(mMapInfo.get("robot_name")));
+        DeviceInfoBean deviceInfoBean = deviceService.selectByIdOrName(null, String.valueOf(jsonObj.get("robot_name")));
         if(deviceInfoBean==null){
             return  Result.ok().msg("该设备不存在");
         }
@@ -169,7 +181,7 @@ public class MapsController {
             MapsDeviceBean mapsDeviceBean = new MapsDeviceBean();
             mapsDeviceBean.setDeviceId(mb.getDeviceId());
             mapsDeviceBean.setDeviceName(deviceInfoBean.getName());
-            mapsDeviceBean.setUserId((Integer) mMapInfo.get("user_id"));
+            mapsDeviceBean.setUserId((Integer) jsonObj.get("user_id"));
 //                组装图片路径
             String path = Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + mb.getDeviceId() + "/" + mb.getUuid() + "/map.png";
 //                组装下载路径
@@ -348,14 +360,18 @@ device_id: 22*/
         4.
         * */
 
-        JSONObject Map=null;
-        for (String km : map.keySet()) {
-            Map = JSONObject.parseObject(km);
+        JSONObject jsonObj=null;
+        int lastIndexOf = map.toString().lastIndexOf(":");
+        if(lastIndexOf==-1){
+            String jsonStr = map.toString().replace("=", ":");
+            jsonObj=JSONObject.parseObject(jsonStr);
+        }else {
+            String subStr = map.toString().substring(0, map.toString().length() - 2);
+            jsonObj = JSONObject.parseObject(subStr.substring(1));
         }
 //        System.out.println("获取地图列表根据条件mmp: "+deviceMap);
-        int mapId = parseInt(String.valueOf(Map.get("map_id")));
-        int deviceId = parseInt(String.valueOf(Map.get("device_id")));
-        String devices = String.valueOf(Map.get("devices"));
+        int mapId = parseInt(String.valueOf(jsonObj.get("map_id")));
+        int deviceId = parseInt(String.valueOf(jsonObj.get("device_id")));
 
        /* int mapId = parseInt(String.valueOf(map.get("map_id")));
         int deviceId = parseInt(String.valueOf( map.get("device_id")));
@@ -371,7 +387,7 @@ device_id: 22*/
             if(mapBean.getId()==mapId){
                 /*组装地图路径*/
 //                String path = Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + mapBean.getDeviceId() + "/" + mapBean.getUuid() + "/map.png";
-                return Result.ok().msg("地图共享成功");
+                return Result.ok().msg("");
           }
         }
         return null;
