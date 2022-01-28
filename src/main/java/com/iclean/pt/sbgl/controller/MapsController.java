@@ -1,11 +1,13 @@
 package com.iclean.pt.sbgl.controller;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.google.gson.Gson;
+import com.iclean.pt.apiServer.Controller.DevicesController;
 import com.iclean.pt.sbgl.bean.MapsBean;
 import com.iclean.pt.sbgl.bean.MapsDeviceBean;
 import com.iclean.pt.sbgl.bean.PathsBean;
@@ -13,16 +15,20 @@ import com.iclean.pt.sbgl.bean.PositionBean;
 import com.iclean.pt.sbgl.service.MapsService;
 import com.iclean.pt.sbgl.service.PathsService;
 import com.iclean.pt.sbgl.service.PositionService;
+import com.iclean.pt.utils.CommUtil;
 import com.iclean.pt.utils.Constants;
 import com.iclean.pt.utils.RedisUtil;
 import com.iclean.pt.utils.Result;
 import com.iclean.pt.yhgl.bean.CustomerBean;
 import com.iclean.pt.yhgl.bean.CustomerDeviceBean;
 import com.iclean.pt.yhgl.bean.DeviceInfoBean;
+import com.iclean.pt.yhgl.bean.UserBean;
 import com.iclean.pt.yhgl.service.CustomerDeviceService;
 import com.iclean.pt.yhgl.service.CustomerService;
 import com.iclean.pt.yhgl.service.DeviceService;
 import com.iclean.pt.yhgl.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,10 +37,9 @@ import java.util.*;
 import static java.lang.Integer.parseInt;
 
 @RestController
-//@Api(tags = "设备管理相关功能模块" )
-//@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST})
-//@RequestMapping("/iclean-cloud")
 public class MapsController {
+
+    private final static Logger logger = LoggerFactory.getLogger(DevicesController.class);
 
      static SerializeConfig config=new SerializeConfig() ;
 
@@ -54,6 +59,8 @@ public class MapsController {
     private PositionService positionService;
     @Autowired
     private RedisUtil redisUtil;
+    @Autowired
+    private CommUtil commUtil;
 
     /**
      * @param
@@ -64,18 +71,13 @@ public class MapsController {
     @RequestMapping(value = "/map/lists",method = RequestMethod.POST)
     public Result getMapsList( @RequestParam  Map<String,Object> mp) {
         /*{"user_id":1,"start_index":0,"count":10,"count_flag":true}: */
-        JSONObject jsonObj=null;
-        int lastIndexOf = mp.toString().lastIndexOf(":");
-        if(lastIndexOf==-1){
-            String jsonStr = mp.toString().replace("=", ":");
-            jsonObj=JSONObject.parseObject(jsonStr);
-        }else {
-            String subStr = mp.toString().substring(0, mp.toString().length() - 2);
-            jsonObj = JSONObject.parseObject(subStr.substring(1));
-        }
+
+        JSONObject jsonObj = commUtil.getJson(mp);
         Object user = redisUtil.hget("users", String.valueOf(jsonObj.get("user_id")));
-        JSONObject jsonObject = JSONObject.parseObject((String) user);
-        CustomerBean customerBean = customerService.selectByPrimaryKey((Integer) jsonObject.get("customerId"));//通过user获取指定customer客户
+        UserBean userBean = BeanUtil.copyProperties(user, UserBean.class);
+//        logger.info("user",userBean);
+//        JSONObject jsonObject = JSONObject.parseObject((String) user);
+        CustomerBean customerBean = customerService.selectByPrimaryKey(userBean.getCustomerId());//通过user获取指定customer客户
         List<CustomerBean> cbs =null;
         if(customerBean==null){
             /*该账户下的客户不能存在,则查询所有客户*/
@@ -159,15 +161,7 @@ public class MapsController {
     @RequestMapping(value = "/map/list",method = RequestMethod.POST)
     public Result getMapInfo( @RequestParam  Map<String,Object> mp) {
         /*{"user_id":1,"start_index":0,"robot_name":"南京国金中心1","count":100,"count_flag":true}: */
-        JSONObject jsonObj=null;
-        int lastIndexOf = mp.toString().lastIndexOf(":");
-        if(lastIndexOf==-1){
-            String jsonStr = mp.toString().replace("=", ":");
-            jsonObj=JSONObject.parseObject(jsonStr);
-        }else {
-            String subStr = mp.toString().substring(0, mp.toString().length() - 2);
-            jsonObj = JSONObject.parseObject(subStr.substring(1));
-        }
+        JSONObject jsonObj = commUtil.getJson(mp);
         DeviceInfoBean deviceInfoBean = deviceService.selectByIdOrName(null, String.valueOf(jsonObj.get("robot_name")));
         if(deviceInfoBean==null){
             return  Result.ok().msg("该设备不存在");
