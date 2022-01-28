@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.iclean.pt.apiServer.dao.AppCrashBeanMapper" >
+  <resultMap id="BaseResultMap" type="com.iclean.pt.apiServer.bean.AppCrashBean" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="sdk" property="sdk" jdbcType="INTEGER" />
+    <result column="brand" property="brand" jdbcType="VARCHAR" />
+    <result column="model" property="model" jdbcType="VARCHAR" />
+    <result column="versionCode" property="versionCode" jdbcType="INTEGER" />
+    <result column="versionName" property="versionName" jdbcType="VARCHAR" />
+    <result column="versionSystem" property="versionSystem" jdbcType="VARCHAR" />
+    <result column="versionNav" property="versionNav" jdbcType="VARCHAR" />
+    <result column="serial" property="serial" jdbcType="VARCHAR" />
+    <result column="robotType" property="robotType" jdbcType="INTEGER" />
+    <result column="robotName" property="robotName" jdbcType="VARCHAR" />
+    <result column="crashDate" property="crashDate" jdbcType="BIGINT" />
+    <result column="msg" property="msg" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, sdk, brand, model, versionCode, versionName, versionSystem, versionNav, serial, 
+    robotType, robotName, crashDate,msg
+  </sql>
+  <select id="selectBySerial" resultMap="BaseResultMap" >
+    select 
+    <include refid="Base_Column_List" />
+    from tb_appcrash
+    where serial like  CONCAT( '%',#{serial}, '%')
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from tb_appcrash
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.iclean.pt.apiServer.bean.AppCrashBean" >
+    insert into tb_appcrash (id, sdk, brand, 
+      model, versionCode, versionName, 
+      versionSystem, versionNav, serial, 
+      robotType, robotName, crashDate,msg
+      )
+    values (#{id,jdbcType=INTEGER}, #{sdk,jdbcType=INTEGER}, #{brand,jdbcType=VARCHAR}, 
+      #{model,jdbcType=VARCHAR}, #{versionCode,jdbcType=INTEGER}, #{versionName,jdbcType=VARCHAR}, 
+      #{versionSystem,jdbcType=VARCHAR}, #{versionNav,jdbcType=VARCHAR}, #{serial,jdbcType=VARCHAR}, 
+      #{robotType,jdbcType=INTEGER}, #{robotName,jdbcType=VARCHAR}, #{crashDate,jdbcType=BIGINT}, #{msg,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.iclean.pt.apiServer.bean.AppCrashBean" >
+    insert into tb_appcrash
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="sdk != null" >
+        sdk,
+      </if>
+      <if test="brand != null" >
+        brand,
+      </if>
+      <if test="model != null" >
+        model,
+      </if>
+      <if test="versionCode != null" >
+        versionCode,
+      </if>
+      <if test="versionName != null" >
+        versionName,
+      </if>
+      <if test="versionSystem != null" >
+        versionSystem,
+      </if>
+      <if test="versionNav != null" >
+        versionNav,
+      </if>
+      <if test="serial != null" >
+        serial,
+      </if>
+      <if test="robotType != null" >
+        robotType,
+      </if>
+      <if test="robotName != null" >
+        robotName,
+      </if>
+      <if test="crashDate != null" >
+        crashDate,
+      </if>
+      <if test="msg != null" >
+        msg,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="sdk != null" >
+        #{sdk,jdbcType=INTEGER},
+      </if>
+      <if test="brand != null" >
+        #{brand,jdbcType=VARCHAR},
+      </if>
+      <if test="model != null" >
+        #{model,jdbcType=VARCHAR},
+      </if>
+      <if test="versionCode != null" >
+        #{versionCode,jdbcType=INTEGER},
+      </if>
+      <if test="versionName != null" >
+        #{versionName,jdbcType=VARCHAR},
+      </if>
+      <if test="versionSystem != null" >
+        #{versionSystem,jdbcType=VARCHAR},
+      </if>
+      <if test="versionNav != null" >
+        #{versionNav,jdbcType=VARCHAR},
+      </if>
+      <if test="serial != null" >
+        #{serial,jdbcType=VARCHAR},
+      </if>
+      <if test="robotType != null" >
+        #{robotType,jdbcType=INTEGER},
+      </if>
+      <if test="robotName != null" >
+        #{robotName,jdbcType=VARCHAR},
+      </if>
+      <if test="crashDate != null" >
+        #{crashDate,jdbcType=BIGINT},
+      </if>
+      <if test="msg != null" >
+        #{msg,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.iclean.pt.apiServer.bean.AppCrashBean" >
+    update tb_appcrash
+    <set >
+      <if test="sdk != null" >
+        sdk = #{sdk,jdbcType=INTEGER},
+      </if>
+      <if test="brand != null" >
+        brand = #{brand,jdbcType=VARCHAR},
+      </if>
+      <if test="model != null" >
+        model = #{model,jdbcType=VARCHAR},
+      </if>
+      <if test="versionCode != null" >
+        versionCode = #{versionCode,jdbcType=INTEGER},
+      </if>
+      <if test="versionName != null" >
+        versionName = #{versionName,jdbcType=VARCHAR},
+      </if>
+      <if test="versionSystem != null" >
+        versionSystem = #{versionSystem,jdbcType=VARCHAR},
+      </if>
+      <if test="versionNav != null" >
+        versionNav = #{versionNav,jdbcType=VARCHAR},
+      </if>
+      <if test="serial != null" >
+        serial = #{serial,jdbcType=VARCHAR},
+      </if>
+      <if test="robotType != null" >
+        robotType = #{robotType,jdbcType=INTEGER},
+      </if>
+      <if test="robotName != null" >
+        robotName = #{robotName,jdbcType=VARCHAR},
+      </if>
+      <if test="crashDate != null" >
+        crashDate = #{crashDate,jdbcType=BIGINT},
+      </if>
+      <if test="msg != null" >
+        msg = #{msg,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.iclean.pt.apiServer.bean.AppCrashBean" >
+    update tb_appcrash
+    set sdk = #{sdk,jdbcType=INTEGER},
+      brand = #{brand,jdbcType=VARCHAR},
+      model = #{model,jdbcType=VARCHAR},
+      versionCode = #{versionCode,jdbcType=INTEGER},
+      versionName = #{versionName,jdbcType=VARCHAR},
+      versionSystem = #{versionSystem,jdbcType=VARCHAR},
+      versionNav = #{versionNav,jdbcType=VARCHAR},
+      serial = #{serial,jdbcType=VARCHAR},
+      robotType = #{robotType,jdbcType=INTEGER},
+      robotName = #{robotName,jdbcType=VARCHAR},
+      crashDate = #{crashDate,jdbcType=BIGINT},
+      msg = #{msg,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

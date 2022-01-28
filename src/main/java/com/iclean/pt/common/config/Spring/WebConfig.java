@@ -22,9 +22,9 @@ public class WebConfig extends WebMvcConfigurerAdapter {
 
                     response.addHeader("Access-Control-Allow-Origin", "*");
                     response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-                   response.addHeader("Access-Control-Allow-Headers",
+                    response.addHeader("Access-Control-Allow-Headers",
                                 "Content-Type,X-Requested-With,accept,Access-Control-Request-Method,Access-Control-Request-Headers,token");
-                response.setHeader("Content-Type","application/json;charset=utf-8,application/x-www-form-urlencoded;charset=UTF-8");
+                   response.setHeader("Content-Type","application/json;charset=utf-8,application/x-www-form-urlencoded;charset=UTF-8");
 
                 return true;
             }

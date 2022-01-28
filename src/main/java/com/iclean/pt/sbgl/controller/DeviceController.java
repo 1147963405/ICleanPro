@@ -76,10 +76,7 @@ public class DeviceController {
          *      1.获取前台的传参进行设备添加
          *      2.设备添加成功后，随便把设备对应和客户添加到设备客户表tb_customer_device
          * */
-        JSONObject dm=null;
-        for (String km : addDevice.keySet()) {
-            dm = JSONObject.parseObject(km);
-        }
+         JSONObject dm = commUtil.getJson(addDevice);
         /*1新增设备*/
         DeviceInfoBean deviceInfoBean=new DeviceInfoBean();
         //当前时间
@@ -153,13 +150,7 @@ public class DeviceController {
         "address":"广东省广州市番禺区石楼",
         "description":"无无","scene":"机场"}: */
 
-
-        String key ="";
-        Iterator<String> it = updateDevice.keySet().iterator();
-        while(it.hasNext()){
-            key = it.next();
-        }
-        Map<String,Object> deviceMap = JSONObject.parseObject(key);
+        JSONObject deviceMap = commUtil.getJson(updateDevice);
         //当前时间
         long time = new Date().getTime();
         DeviceInfoBean dib = deviceService.selectByPrimaryKey((Integer) deviceMap.get("id"));
@@ -208,16 +199,15 @@ public class DeviceController {
      **/
     @RequestMapping(value = "/device/lists", method = RequestMethod.POST)
     public Result getDeviceList(@RequestParam  Map deviceList)  {
-//        获取设备列表：{start_index=0, count=20, count_flag=true, customer_id=0}
-        logger.info("获取设备列表："+deviceList);
+//        获取设备列表：{start_index=0, count=20, count_flag=true, customer_id=0} fromIndex(40) > toIndex(25)
+        logger.debug("获取设备列表",deviceList);
         /*通过customer_id筛选：{"customer_id":0,"start_index":0,"count":20,"count_flag":true}: */
-        /*通过type_id筛选：{"customer_id":0,"start_index":1,"count":20,"count_flag":true,"type_id":3}: */
+        /*通过type_id筛选：{"customer_id":0,"start_index":1,"count":20,"count_flag":true,"type_id":3} */
         /* 通过status筛选:{"customer_id":0,"start_index":0,"count":20,"count_flag":true,"status":0}:
          */
         /*0离线 1空闲 2任务中 3充电中 4急停中*/
         JSONObject jsonObject = commUtil.getJson(deviceList);
         //解析deviceList
-        logger.info("获取设备json："+jsonObject);
         List<JsonBean>   jsonBeans=new ArrayList<>();
       /*  List<JsonBean>   jsonBeans=new ArrayList<>();
         Map<String, Object> deviceMap=null;
@@ -234,7 +224,7 @@ public class DeviceController {
             /*根据条件获取设备列表*/
             List<DeviceInfoBean> dibs=deviceService.selectBySelective((Integer)jsonObject.get("type_id"),(Integer) jsonObject.get("status"),String.valueOf(jsonObject.get("name")),String.valueOf(jsonObject.get("serial")));//67
             if (dibs.size() <= 0) {
-                return Result.ok().msg("error");
+                return Result.ok().msg("the device is null");
             }
             /*把线上的和数据库中的设备分憋做处理*/
 //            for (int i=0;i<dibs.size();i++) {
@@ -242,10 +232,8 @@ public class DeviceController {
                     Object message = redisUtil.hget("message", String.valueOf(dib.getId()));
 //                    logger.info("redis数据:",JSON.toJSONString(message));
                     JSONObject jsonObj = JSONObject.parseObject((String) message);
-                    logger.info("redis数据:",jsonObj);
                     if(jsonObj!=null){
 //                    for (Object km : redisUtil.hmget("message").keySet()) {
-                    logger.info("redis数据:",jsonObj);
                     /*通过device_id对比数据库中的设备与线上的设备，并回显的数据为device_id相同的线上设备信息*/
 //                    if (dib.getId().equals(km) || dib.getId()==km) {
 //                        lst.add(dib.getId());
@@ -513,19 +501,18 @@ public class DeviceController {
         "status": 1,
        "curr_map": ""
        }*/
-        Integer device_id=null;
         /*步骤
         1.通过device_id获取线上指定设备实时状态
         2.如果设备状态发生改变，则实时更新状态回数据库
         * */
-
+        JSONObject json = commUtil.getJson(mp);
         logger.info("更新设备状态","测试。。。。。。");
-        JSONObject jsonObject = JSONObject.parseObject(String.valueOf(redisUtil.hget(Constants.Mqtt.TOPIC_SUB_ROBOT_STATUS.getValue(), String.valueOf(device_id))));
+        JSONObject jsonObject = JSONObject.parseObject(String.valueOf(redisUtil.hget(Constants.Mqtt.TOPIC_SUB_ROBOT_STATUS.getValue(), String.valueOf(json.get("device_id")))));
         if(jsonObject==null){
             return  Result.error().msg("the device_id is not exist!");
         }
         /*获取设备对象*/
-        DeviceInfoBean deviceInfoBean = deviceService.selectByPrimaryKey(device_id);
+        DeviceInfoBean deviceInfoBean = deviceService.selectByPrimaryKey((Integer) json.get("device_id"));
         if(!jsonObject.get("status").equals(deviceInfoBean.getStatus())||jsonObject.get("status")!=deviceInfoBean.getStatus()){
             /*更新状态*/
             deviceInfoBean.setStatus((Integer) jsonObject.get("status"));
@@ -666,8 +653,8 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
 
         JSONObject jsonObj = commUtil.getJson(map);
         int counts;
-        int startIndex = parseInt(String.valueOf(jsonObj.get("start_index")));
-        int count = parseInt(String.valueOf(jsonObj.get("count")));
+        int startIndex = parseInt(jsonObj.get("start_index").toString());
+        int count = parseInt(jsonObj.get("count").toString());
         /*2*/
         List<CustomerBean> customerBeans = null;
         List<AlarmBean> alarmBeans =null;
@@ -692,7 +679,7 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
                     }
                 }
             }
-            alarmBeans = alarmService.selectBySelective((Integer) maps.get("deviceId"), parseInt(String.valueOf(jsonObj.get("status"))), startIndex, count);
+            alarmBeans = alarmService.selectBySelective((Integer) maps.get("deviceId"), Integer.parseInt(jsonObj.get("status").toString()), startIndex, count);
             counts = alarmService.selectBySelective((Integer) maps.get("deviceId"), parseInt(String.valueOf(jsonObj.get("status"))), 0, 0).size();
         }else {
               alarmBeans =alarmService.selectList(parseInt(String.valueOf(jsonObj.get("status"))),startIndex,count);
@@ -859,6 +846,7 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
      **/
     @RequestMapping(value = "/event/lists", method = RequestMethod.POST)
     public Result getEventLists(@RequestParam Map<String,Object> map){
+        logger.debug("获取设备列表",map);
 /*{"user_id":1,"start_index":0,"beginTime":"","endTime":"","count":10,"count_flag":true,"device_id":113,"status":0}:
  {
                 "type": 0,
@@ -870,11 +858,13 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
             }
  */
         JSONObject jsonObj = commUtil.getJson(map);
+        int startIndex = parseInt(jsonObj.get("start_index").toString());
+        int count = parseInt(jsonObj.get("count").toString());
         List eventLists=new ArrayList();
         int size=0;
-     List<EventsBean> eventsBeans = eventsService.selectBySelective((Integer) jsonObj.get("device_id"),(Integer) jsonObj.get("status"), (Integer) jsonObj.get("start_index"), (Integer) jsonObj.get("count"));
+     List<EventsBean> eventsBeans = eventsService.selectBySelective(Integer.parseInt(jsonObj.get("device_id").toString()),Integer.parseInt(jsonObj.get("status").toString()), startIndex, count);
    if(eventsBeans.size()>0){
-       size= eventsService.selectBySelective((Integer) jsonObj.get("device_id"),(Integer) jsonObj.get("status"),0,0).size();
+       size= eventsService.selectBySelective(Integer.parseInt(jsonObj.get("device_id").toString()),Integer.parseInt(jsonObj.get("status").toString()),0,0).size();
     for (EventsBean ebs:eventsBeans) {
         //组装JSON对象
         Map<String,Object> beanMap=new HashMap<>();
@@ -890,9 +880,26 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
         eventLists.add(beanMap);
     }
 }
+        List<JsonBean> jsonBeanList = null;
+        if (startIndex == 0) {
+            if(count > eventLists.size()){
+                jsonBeanList = eventLists.subList(startIndex, eventLists.size());
+            }else {
+                jsonBeanList = eventLists.subList(startIndex, count);
+            }
+        } else {
+            int Tcount = count + startIndex;
+            int sizes = eventLists.size();
+            if (Tcount >size) {
+                jsonBeanList = eventLists.subList(startIndex, sizes);
+            } else {
+                jsonBeanList = eventLists.subList(startIndex, Tcount);
+            }
+
+        }
         Map<String,Object> jsonMap=new HashMap<>();
         jsonMap.put("count",size);
-        jsonMap.put("events",eventLists);
+        jsonMap.put("events",jsonBeanList);
         return Result.ok().data(jsonMap).msg("");
     }
 
@@ -1142,7 +1149,7 @@ logger.info("获取指定设备下的清洁报告:"+cleanReportMap);
         if(deviceInfoBean==null){
             return  Result.ok().msg("该设备不存在");
         }
-        List<CleanReportBean> cleanReportBeans = cleanReportService.selectSelective(deviceInfoBean.getId(),(Integer) jsonObj.get("start_index"),(Integer) jsonObj.get("count"));
+        List<CleanReportBean> cleanReportBeans = cleanReportService.selectSelective(deviceInfoBean.getId(),Integer.parseInt(jsonObj.get("start_index").toString()),Integer.parseInt(jsonObj.get("count").toString()));
         List<CleanReportBean> cleanReportLsts = cleanReportService.selectSelective(deviceInfoBean.getId(), 0, 0);
         if(cleanReportBeans.size()<0){
             return  Result.ok().msg("该设备没有清洁报告");
