@@ -38,6 +38,16 @@
     </if>
   </select>
 
+  <select id="selectCustomer" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+   select count(1) from tb_customer where id in(select customer_id from tb_user where id=#{userId,jdbcType=INTEGER})
+  </select>
+
+  <select id="selectCustomerByPrimaryKey" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+   select count(1) from tb_customer where id=#{customerId,jdbcType=INTEGER}
+  </select>
+
+
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
     delete from tb_customer
     where id = #{id,jdbcType=INTEGER}

@@ -108,6 +108,46 @@
       </if>
     </where>
   </select>
+
+
+
+  <select id="selectDevicesByCustomerId" resultType="java.util.Map" parameterType="java.lang.Integer">
+   select
+    r.id,r.name,r.serial,r.address ,r.type_id,r.scene,r.module_info,r.last_located_address,r.description,r.status,t.type
+    from (select
+    *
+    from tb_device_info where id in (select device_id from tb_customer_device where
+     customer_id=#{customerId,jdbcType=INTEGER})) r join  tb_device_type t on r.type_id=t.id  order by r.`status` desc
+
+    </select>
+
+
+  <select id="selectDevicesByParams" resultType="java.util.Map" parameterType="java.lang.Integer">
+   select
+    r.id,r.name,r.serial,r.address ,r.type_id,r.scene,r.module_info,r.last_located_address,r.description,r.status,t.type
+    from (select
+    *
+    from tb_device_info where id in (select device_id from tb_customer_device where customer_id=${customerId})) r join
+     tb_device_type t on r.type_id=t.id  ${devicesParams}   order by r.`status` desc
+
+    </select>
+
+
+  <select id="selectDevices" resultType="java.util.Map" parameterType="java.lang.Integer">
+   select
+    r.id,r.name,r.serial,r.address ,r.type_id,r.scene,r.module_info,r.last_located_address,r.description,r.status,t.type
+    from tb_device_info r join  tb_device_type t on r.type_id=t.id  order by r.`status` desc
+    </select>
+
+  <select id="selectDevicesBySelective" resultType="java.util.Map" parameterType="java.lang.Integer">
+   select
+    r.id,r.name,r.serial,r.address ,r.type_id,r.scene,r.module_info,r.last_located_address,r.description,r.status,t.type
+    from tb_device_info r join  tb_device_type t on r.type_id=t.id  ${devicesParams}  order by r.`status` desc
+    </select>
+
+
+
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
     delete from tb_device_info
     where id = #{id,jdbcType=INTEGER}

@@ -36,6 +36,13 @@
     where id = #{id,jdbcType=INTEGER} and device_id = #{deviceId,jdbcType=INTEGER}
   </select>
 
+  <select id="selectByName" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List" />
+    from tb_maps
+    where name = #{name,jdbcType=VARCHAR}
+  </select>
+
   <select id="selectByDeviceId" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
     select
     <include refid="Base_Column_List" />
@@ -47,6 +54,51 @@
       and device_id=#{deviceId,jdbcType=INTEGER} LIMIT #{},#{}
     </if>
   </select>
+
+
+  <select id="selectMapsByUserId" resultType="java.util.Map" >
+
+   select
+    r.id as map_id,r.device_id,r.name as map_name,r.uuid,t.name as  device_name
+    from (select
+    *
+    from tb_maps where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where id=#{userId}))) r join
+     tb_device_info t on r.device_id=t.id
+     </select>
+
+  <select id="selectMapsByParams" resultType="java.util.Map" >
+
+   select
+    r.id as map_id,r.device_id,r.name as map_name,r.uuid,t.name as  device_name
+    from (select
+    *
+    from tb_maps where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where id=${userId}))) r join
+     tb_device_info t on r.device_id=t.id  ${mapsParams}
+     </select>
+
+  <select id="selectMaps" resultType="java.util.Map" >
+
+     select
+    r.id as map_id,r.device_id,r.name as map_name,r.uuid,t.name as  device_name
+    from (select
+    *
+    from tb_maps where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
+     tb_device_info t on r.device_id=t.id
+   </select>
+
+
+  <select id="selectMapsBySelective" resultType="java.util.Map" >
+
+     select
+    r.id as map_id,r.device_id,r.name as map_name,r.uuid,t.name as  device_name
+    from (select
+    *
+    from tb_maps where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
+     tb_device_info t on r.device_id=t.id   ${mapsParams}
+   </select>
+
+
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
     delete from tb_maps
     where id = #{id,jdbcType=INTEGER}

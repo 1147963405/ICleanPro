@@ -18,4 +18,6 @@ public interface CustomerBeanMapper {
     CustomerBean selectByPrimaryKey(Integer id);
     int updateByPrimaryKeySelective(CustomerBean record);
     int updateByPrimaryKey(CustomerBean record);
+    int selectCustomer(Integer userId);
+    int selectCustomerByPrimaryKey(Integer customerId);
 }

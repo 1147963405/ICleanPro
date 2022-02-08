@@ -25,4 +25,15 @@ public interface DeviceInfoBeanMapper {
 
     int updateByPrimaryKey(DeviceInfoBean record);
 
+
+ /*   List<Map<String,Object>> selectDeviceByCustomerId(Integer customerId);
+    List<Map<String,Object>> selectDevices();*/
+
+
+
+    List<Map<String,Object>> selectDevicesByCustomerId(@Param("customerId") Integer customerId);
+    List<Map<String,Object>> selectDevicesByParams(@Param("customerId") Integer customerId,@Param("devicesParams") String params);
+    List<Map<String,Object>> selectDevices();
+    List<Map<String,Object>> selectDevicesBySelective(@Param("devicesParams") String params);
+
 }

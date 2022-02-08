@@ -19,12 +19,11 @@ import java.util.*;
 
 
 @RestController
-//@RequestMapping("/iclean-cloud")
 public class SystemController {
+
 
     @Autowired
     private ModuleVersionService moduleVersionService;
-
 
     /**
      * @param

@@ -34,6 +34,18 @@
       <result column="description" property="description" jdbcType="VARCHAR"/>
       <result column="update_time" property="updateTime" jdbcType="BIGINT"/>
     </association>
+
+  </resultMap>
+  <resultMap id="BaseResultMapp" type="com.iclean.pt.sbgl.bean.CleanReportBean" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="map_id" property="mapId" jdbcType="INTEGER" />
+    <result column="device_id" property="deviceId" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="INTEGER" />
+    <result column="clean_area" property="cleanArea" jdbcType="VARCHAR" />
+    <result column="use_time" property="useTime" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="report" property="report" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="VARCHAR"/>
   </resultMap>
 
   <sql id="base">
@@ -69,18 +81,6 @@
       cb.description,
       cb.update_time
 </sql>
-
-  <select id="selectCustomerWithDevices" resultMap="BaseResultMap" parameterType="java.lang.Integer">
-    select
-    <include refid="base" />,
-    <include refid="deviceInfoColumn" />
-    from tb_customer_device cd
-   left JOIN tb_customer cb on cb.id=cd.customer_id
-   left join tb_device_info d on
-    d.id=cd.device_id
-    where
-    cd.customer_id=#{customerId}
-  </select>
 
   <select id="selectByDeviceId"  resultType="java.util.Map"  parameterType="java.lang.Integer">
     select

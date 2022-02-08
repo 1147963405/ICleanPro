@@ -49,6 +49,52 @@
      </if>
    </where>
   </select>
+
+
+  <select id="selectAlarmByUserId" resultType="java.util.Map" parameterType="java.lang.Integer">
+   select
+    r.id,r.device_id,r.context ,FROM_UNIXTIME(r.start_time, '%Y-%m-%d %H:%i:%S') as start_time,r.status,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,t.name as  device_name
+    from (select
+    *
+    from tb_alarm where device_id in (select device_id from tb_customer_device where
+    customer_id in(select customer_id from tb_user where id=#{userId,jdbcType=INTEGER}))) r join  tb_device_info t on r.device_id=t.id  order by r.update_time desc
+     </select>
+
+
+  <select id="selectAlarmsByParams" resultType="java.util.Map" parameterType="java.lang.Integer">
+   select
+    r.id,r.device_id,r.context ,FROM_UNIXTIME(r.start_time, '%Y-%m-%d %H:%i:%S') as start_time,r.status,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,t.name as  device_name
+    from (select
+    *
+    from tb_alarm where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where id=${userId}))) r join
+     tb_device_info t on r.device_id=t.id   ${alarmsParams}  order by r.update_time desc
+     </select>
+
+  <select id="selectAlarms" resultType="java.util.Map" parameterType="java.lang.Integer">
+    select
+    r.id,r.device_id,r.context ,FROM_UNIXTIME(r.start_time, '%Y-%m-%d %H:%i:%S') as start_time,r.status,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,t.name as  device_name
+    from (select
+    *
+    from tb_alarm where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
+      tb_device_info t on r.device_id=t.id  order by r.update_time desc
+     </select>
+
+
+  <select id="selectAlarmsBySelective" resultType="java.util.Map" parameterType="java.lang.Integer">
+    select
+    r.id,r.device_id,r.context ,FROM_UNIXTIME(r.start_time, '%Y-%m-%d %H:%i:%S') as start_time,r.status,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,t.name as  device_name
+    from (select
+    *
+    from tb_alarm where device_id in (select device_id from tb_customer_device
+    where customer_id in(select id from tb_customer))) r join  tb_device_info t on r.device_id=t.id  ${alarmsParams}  order by r.update_time desc
+     </select>
+
+
+
+
+
+
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
     delete from tb_alarm
     where id = #{id,jdbcType=INTEGER}

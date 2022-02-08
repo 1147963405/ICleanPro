@@ -31,6 +31,56 @@
       </if>
     </where>
   </select>
+
+
+  <select id="selectEventsByUserId" resultType="java.util.Map" >
+
+     select
+    r.id,r.context,r.type,r.status,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,t.name as  device_name
+    from (select
+    *
+    from tb_event where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where id=#{param1}))) r join
+     tb_device_info t on r.device_id=t.id
+  </select>
+
+
+
+  <select id="selectEventsByParams" resultType="java.util.Map" >
+
+     select
+    r.id,r.context,r.type,r.status,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,t.name as  device_name
+    from (select
+    *
+    from tb_event where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where id=${userId}))) r join
+     tb_device_info t on r.device_id=t.id ${eventsParams}
+  </select>
+
+
+
+  <select id="selectEvents" resultType="java.util.Map"  >
+
+    select
+    r.id,r.context,r.type,r.status,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,t.name as  device_name
+    from (select
+    *
+    from tb_event where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
+      tb_device_info t on r.device_id=t.id
+      </select>
+
+
+
+  <select id="selectEventsBySelective" resultType="java.util.Map"  >
+
+    select
+    r.id,r.context,r.type,r.status,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,t.name as  device_name
+    from (select
+    *
+    from tb_event where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
+      tb_device_info t on r.device_id=t.id  ${eventsParams}
+      </select>
+
+
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
     delete from tb_event
     where id = #{id,jdbcType=INTEGER}

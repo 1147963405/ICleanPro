@@ -64,6 +64,25 @@ public class DeviceServiceImp  implements DeviceService {
         return deviceInfoBeanMapper.deleteByPrimaryKey(id);
     }
 
+    @Override
+    public List<Map<String, Object>> selectDevicesByCustomerId(Integer customerId) {
+        return deviceInfoBeanMapper.selectDevicesByCustomerId(customerId);
+    }
+
+    @Override
+    public List<Map<String, Object>> selectDevicesByParams(Integer customerId, String params) {
+        return deviceInfoBeanMapper.selectDevicesByParams(customerId,params);
+    }
+
+    @Override
+    public List<Map<String, Object>> selectDevices() {
+        return deviceInfoBeanMapper.selectDevices();
+    }
+
+    @Override
+    public List<Map<String, Object>> selectDevicesBySelective(String params) {
+        return deviceInfoBeanMapper.selectDevicesBySelective(params);
+    }
 
 
 }

@@ -36,6 +36,70 @@
       </if>
   </select>
 
+
+  <select id="selectCleanRportsByUserId" resultType="java.util.Map">
+    select
+    r.id,r.map_id,r.device_id,r.name,r.clean_area,r.use_time,r.`type`,r.report,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,m.uuid,m.name as  map_name,t.name as  device_name,t.serial as device_serial,t.type_id as  device_type_id
+    from (select
+    *
+    from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where  id=#{param1}))) r join
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id
+  </select>
+
+
+  <select id="selectCleanRportsByParams" resultType="java.util.Map">
+    select
+    r.id,r.map_id,r.device_id,r.name,r.clean_area,r.use_time,r.`type`,r.report,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,m.uuid,m.name as  map_name,t.name as  device_name,t.serial as device_serial,t.type_id as  device_type_id
+    from (select
+    *
+    from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where  id=${userId}))) r join
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id ${cleanParams}
+  </select>
+
+
+  <select id="selectCleanRports" resultType="java.util.Map">
+    select
+    r.id,r.map_id,r.device_id,r.name,r.clean_area,r.use_time,r.`type`,r.report,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,m.uuid,
+    m.name as  map_name,t.name as  device_name,t.serial as device_serial,t.type_id as  device_type_id
+    from (select
+    *
+    from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id
+  </select>
+
+  <select id="selectCleanRportsBySelective" resultType="java.util.Map">
+    select
+    r.id,r.map_id,r.device_id,r.name,r.clean_area,r.use_time,r.`type`,r.report,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,m.uuid,
+    m.name as  map_name,t.name as  device_name,t.serial as device_serial,t.type_id as  device_type_id
+    from (select
+    *
+    from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id  ${cleanParams}
+  </select>
+
+
+  <select id="selectCleanRportsTotal" resultType="java.util.Map">
+   select
+    sum(c.clean_area) as top_clean_area,sum(c.use_time) as top_use_time
+    from tb_clean_report  c join  tb_device_info d on c.device_id=d.id
+  </select>
+
+  <select id="selectCleanRportsTotalByCustomerId" resultType="java.util.Map">
+select
+    sum(r.clean_area) as top_clean_area,sum(r.use_time) as top_use_time
+    from (select
+    *
+    from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id=#{customerId,jdbcType=INTEGER})) r
+  </select>
+
+
+
+
+
+
+
+
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from tb_clean_report
     where id = #{id,jdbcType=INTEGER}

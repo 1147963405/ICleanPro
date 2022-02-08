@@ -17,6 +17,8 @@ public interface CustomerService {
     CustomerBean selectByPrimaryKey(Integer id);
     /*根据条件获取客户信息列表*/
     List<CustomerBean> selectBySelective(Integer customerGroupId,Integer customerId);
+    int selectCustomer(Integer userId);
+    int selectCustomerByPrimaryKey(Integer customerId);
 
 
 

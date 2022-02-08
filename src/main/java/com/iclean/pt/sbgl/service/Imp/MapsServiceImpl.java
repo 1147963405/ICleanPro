@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class MapsServiceImpl implements MapsService {
@@ -38,4 +39,31 @@ public class MapsServiceImpl implements MapsService {
     public MapsBean selectByIdAndDeviceId(Integer id, Integer deviceId) {
         return mapsBeanMapper.selectByIdAndDeviceId(id,deviceId);
     }
+
+    @Override
+    public List<MapsBean> selectByName(String name) {
+        return mapsBeanMapper.selectByName(name);
+    }
+
+    @Override
+    public List<Map<String, Object>> selectMapsByUserId(Integer userId) {
+        return mapsBeanMapper.selectMapsByUserId(userId);
+    }
+
+    @Override
+    public List<Map<String, Object>> selectMapsByParams(Integer userId, String params) {
+        return mapsBeanMapper.selectMapsByParams(userId,params);
+    }
+
+    @Override
+    public List<Map<String, Object>> selectMaps() {
+        return mapsBeanMapper.selectMaps();
+    }
+
+    @Override
+    public List<Map<String, Object>> selectMapsBySelective(String params) {
+        return mapsBeanMapper.selectMapsBySelective(params);
+    }
+
+
 }

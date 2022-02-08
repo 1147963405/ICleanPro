@@ -47,7 +47,7 @@
             &lt;!&ndash;<property name="immutable" value="false"/>&ndash;&gt;
         </javaModelGenerator>-->
         <!-- 生成Pojo包名和位置 -->
-        <javaModelGenerator targetPackage="com.iclean.pt.sbgl.bean"
+        <javaModelGenerator targetPackage="com.iclean.pt.apiServer.bean"
                             targetProject="src/main/java">
             <!-- enableSubPackages:是否让schema作为包的后缀 -->
             <property name="enableSubPackages" value="true" />
@@ -66,19 +66,19 @@
                 type="MIXEDMAPPER",生成基于注解的Java Model 和相应的Mapper对象
                 type="XMLMAPPER",生成SQLMap XML文件和独立的Mapper接口
         -->
-        <javaClientGenerator targetPackage="com.iclean.pt.sbgl.dao"
+        <javaClientGenerator targetPackage="com.iclean.pt.apiServer.dao"
                              targetProject="src/main/java" type="XMLMAPPER">
             <property name="enableSubPackages" value="false"/>
         </javaClientGenerator>
 
         <!-- 数据表名及实体类名称  -->
-        <table tableName="tb_customer_device" domainObjectName="ModuleVersionBean"
+        <table tableName="tb_appcrash" domainObjectName="AppCrashBean"
                enableCountByExample="false" enableUpdateByExample="false"
                enableDeleteByExample="false" enableSelectByExample="false"
                selectByExampleQueryId="false">
-            <columnOverride column="name" javaType="java.lang.String" jdbcType="VARCHAR" />
+           <!-- <columnOverride column="name" javaType="java.lang.String" jdbcType="VARCHAR" />
             <columnOverride column="file_name" javaType="java.lang.String" jdbcType="VARCHAR" />
-            <columnOverride column="description" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <columnOverride column="description" javaType="java.lang.String" jdbcType="VARCHAR" />-->
             <!--<columnOverride column="status" javaType="java.lang.String" jdbcType="VARCHAR" />
             <columnOverride column="appendfile" javaType="java.lang.String" jdbcType="VARCHAR" />
             <columnOverride column="description" javaType="java.lang.String" jdbcType="VARCHAR" />-->

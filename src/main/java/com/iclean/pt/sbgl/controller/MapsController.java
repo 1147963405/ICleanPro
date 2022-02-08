@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.serializer.SerializeConfig;
+import com.github.pagehelper.PageHelper;
 import com.google.gson.Gson;
 import com.iclean.pt.apiServer.Controller.DevicesController;
 import com.iclean.pt.sbgl.bean.MapsBean;
@@ -15,24 +16,17 @@ import com.iclean.pt.sbgl.bean.PositionBean;
 import com.iclean.pt.sbgl.service.MapsService;
 import com.iclean.pt.sbgl.service.PathsService;
 import com.iclean.pt.sbgl.service.PositionService;
-import com.iclean.pt.utils.CommUtil;
-import com.iclean.pt.utils.Constants;
-import com.iclean.pt.utils.RedisUtil;
-import com.iclean.pt.utils.Result;
-import com.iclean.pt.yhgl.bean.CustomerBean;
-import com.iclean.pt.yhgl.bean.CustomerDeviceBean;
+import com.iclean.pt.utils.*;
 import com.iclean.pt.yhgl.bean.DeviceInfoBean;
-import com.iclean.pt.yhgl.bean.UserBean;
-import com.iclean.pt.yhgl.service.CustomerDeviceService;
 import com.iclean.pt.yhgl.service.CustomerService;
 import com.iclean.pt.yhgl.service.DeviceService;
-import com.iclean.pt.yhgl.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Integer.parseInt;
 
@@ -41,26 +35,21 @@ public class MapsController {
 
     private final static Logger logger = LoggerFactory.getLogger(DevicesController.class);
 
-     static SerializeConfig config=new SerializeConfig() ;
-
     @Autowired
     private MapsService mapsService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private CustomerService customerService;
-    @Autowired
-    private CustomerDeviceService customerDeviceService;
+
     @Autowired
     private PathsService pathsService;
     @Autowired
     private DeviceService deviceService;
     @Autowired
     private PositionService positionService;
-    @Autowired
-    private RedisUtil redisUtil;
+
     @Autowired
     private CommUtil commUtil;
+
 
     /**
      * @param
@@ -69,134 +58,57 @@ public class MapsController {
      * @description 获取地图列表
      **/
     @RequestMapping(value = "/map/lists",method = RequestMethod.POST)
-    public Result getMapsList( @RequestParam  Map<String,Object> mp) {
-        /*{"user_id":1,"start_index":0,"count":10,"count_flag":true}: */
-
+    public Result getMapsList( @RequestParam  Map mp) {
+//    public Result getMapsList( @RequestBody  Map mp) {
+        /*{"user_id":1,"start_index ":0,"count":10,"count_flag":true}:
+        * {"user_id":1,"start_index":0,"robot_name":"南京国金中心1","count":100,"count_flag":true}
+        * */
+      logger.info("获取地图列表"+mp);
         JSONObject jsonObj = commUtil.getJson(mp);
-        Object user = redisUtil.hget("users", String.valueOf(jsonObj.get("user_id")));
-        UserBean userBean = BeanUtil.copyProperties(user, UserBean.class);
-//        logger.info("user",userBean);
-//        JSONObject jsonObject = JSONObject.parseObject((String) user);
-        CustomerBean customerBean = customerService.selectByPrimaryKey(userBean.getCustomerId());//通过user获取指定customer客户
-        List<CustomerBean> cbs =null;
-        if(customerBean==null){
-            /*该账户下的客户不能存在,则查询所有客户*/
-            cbs = customerService.selectBySelective(null,null);
-//             System.out.println("null cbs: "+cbs);
-        }else {
-            /*该账户下的客户存在,则查询指定客户下的信息*/
-            cbs = customerService.selectBySelective(null,customerBean.getId());
-//            System.out.println("cbs: "+cbs);
-        }
-        /*通过获取到的客户信息去关联中间表，查询出匹配的所有设备信息*/
-        Map<Integer,Object> maps=new HashMap<>();
-        for (CustomerBean cbn:cbs) {
-                /*通过客户id获取中间表中与之匹配的所有设备id，如果device相同则只取一次*/
-                maps.put(cbn.getId(),cbn);
-            }
+        int start_index = parseInt(jsonObj.get("start_index").toString());
+        int count = parseInt(jsonObj.get("count").toString());
+        int user_id = parseInt(jsonObj.get("user_id").toString());
+        List<Map<String,Object>> mapsLists =null;
+        int counts = customerService.selectCustomer(user_id);
+        if(counts==0){
 
-        Map<Integer,Object> mapsMap=new HashMap<>();
-        for (Integer customerId:maps.keySet()) {
-            List<CustomerDeviceBean> customerDeviceBeans = customerDeviceService.selectCustomerWithDevices(customerId);
-            if (customerDeviceBeans.size() > 0) {
-                for (CustomerDeviceBean cbd : customerDeviceBeans) {
-                    mapsMap.put(cbd.getDeviceInfoBean().getId(), cbd.getDeviceInfoBean().getName());
-                }
-            }
-        }
-        List<MapsDeviceBean> mdb=new ArrayList<>();
-        for (Map.Entry<Integer,Object> entry : mapsMap.entrySet()) {
-            List<MapsBean> mapsBeanList = mapsService.selectByDeviceId(entry.getKey(),0,0);
-            for (MapsBean mb : mapsBeanList) {
-                MapsDeviceBean mapsDeviceBean = new MapsDeviceBean();
-                mapsDeviceBean.setDeviceId(mb.getDeviceId());
-                mapsDeviceBean.setDeviceName(String.valueOf( entry.getValue()));
-                mapsDeviceBean.setUserId((Integer) jsonObj.get("user_id"));
-//                组装图片路径
-                String path = Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + mb.getDeviceId() + "/" + mb.getUuid() + "/map.png";
-//                组装下载路径
-                String download = Constants.Global.MAP_DOWNLOAD_URL.getValue() + Constants.Global.MAP_DOWNLOAD_PATH.getValue() + "?device_id=" + mb.getDeviceId() + "&uuid=" + mb.getUuid();
-                mapsDeviceBean.setPath(path);
-                mapsDeviceBean.setDownloadUrl(download);
-                mapsDeviceBean.setMapId(mb.getId());
-                mapsDeviceBean.setMapName(mb.getName());
-                mdb.add(mapsDeviceBean);
-            }
-        }
-        int start_index = parseInt(String.valueOf(jsonObj.get("start_index")));
-        int count = parseInt(String.valueOf(jsonObj.get("count")));
-        /*分页*/
-        List<MapsDeviceBean> jsonBeanList = null;
-        if (start_index==0) {
-            if(count > mdb.size()){
-                jsonBeanList = mdb.subList(start_index, mdb.size()); //subList(int fromIndex, int toIndex);
+            if(jsonObj.get("robot_name")!=null){
+                StringBuilder deviceNameSql = new StringBuilder();
+                deviceNameSql.append(" and  t.name like '%"+jsonObj.get("robot_name")+"%'");
+                PageHelper.offsetPage(start_index, count);
+                mapsLists=mapsService.selectMapsBySelective(deviceNameSql.toString());
             }else {
-                jsonBeanList = mdb.subList(start_index, count);
-            }
-        } else {
-            int Tcount = count + start_index;
-            if (Tcount >mdb.size()) {
-                jsonBeanList = mdb.subList(start_index, mdb.size());
-            } else {
-                jsonBeanList = mdb.subList(start_index, Tcount);
+                PageHelper.offsetPage(start_index, count);
+                mapsLists=mapsService.selectMaps();
             }
 
+        }else {
+            if(jsonObj.get("robot_name")!=null){
+                StringBuilder deviceNameSql = new StringBuilder();
+                deviceNameSql.append(" and  t.name like '%"+jsonObj.get("robot_name")+"%'");
+                PageHelper.offsetPage(start_index, count);
+                mapsLists=mapsService.selectMapsByParams(user_id,deviceNameSql.toString());
+            }else {
+                PageHelper.offsetPage(start_index, count);
+                mapsLists=mapsService.selectMapsByUserId(user_id);
+            }
         }
-        /*组装JSON返回对象*/
-        Map<String,Object> map=new HashMap<>();
-        map.put("count",mdb.size());
-        map.put("map",jsonBeanList);
-        config.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
-        String json = JSON.toJSONString(map, config);
-        JSONObject jsonMap = JSONObject.parseObject(json);//json转map
-        return Result.ok().data(jsonMap).msg("");
+        long total = ((com.github.pagehelper.Page) mapsLists).getTotal();
+        for (Map<String,Object> map:mapsLists) {
+            // 组装图片路径
+            String path = Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + map.get("device_id") + "/" + map.get("uuid") + "/map.png";
+          //  组装下载路径
+            String download = Constants.Global.MAP_DOWNLOAD_URL.getValue() + Constants.Global.MAP_DOWNLOAD_PATH.getValue() + "?device_id=" + map.get("device_id") + "&uuid=" + map.get("uuid");
+            map.put("path",path);
+            map.put("download_url",download);
+            map.put("user_id",user_id);
+        }
+
+        Map<String,Object> map=new ConcurrentHashMap<>();
+        map.put("count",total);
+        map.put("map",mapsLists);
+        return Result.ok().data(map).msg("");
     }
-
-    /**
-     * @param
-     * @param
-     * @return Result
-     * @description 获取指定地图列表
-     **/
-    @RequestMapping(value = "/map/list",method = RequestMethod.POST)
-    public Result getMapInfo( @RequestParam  Map<String,Object> mp) {
-        /*{"user_id":1,"start_index":0,"robot_name":"南京国金中心1","count":100,"count_flag":true}: */
-        JSONObject jsonObj = commUtil.getJson(mp);
-        DeviceInfoBean deviceInfoBean = deviceService.selectByIdOrName(null, String.valueOf(jsonObj.get("robot_name")));
-        if(deviceInfoBean==null){
-            return  Result.ok().msg("该设备不存在");
-        }
-        List<MapsBean> mapsBeanLists = mapsService.selectByDeviceId(deviceInfoBean.getId(),0,0);
-        if(mapsBeanLists.size()<0){
-            return  Result.ok().msg("该设备不存在地图");
-        }
-        List<MapsDeviceBean> mdb=new ArrayList<>();
-        for (MapsBean mb : mapsBeanLists) {
-            MapsDeviceBean mapsDeviceBean = new MapsDeviceBean();
-            mapsDeviceBean.setDeviceId(mb.getDeviceId());
-            mapsDeviceBean.setDeviceName(deviceInfoBean.getName());
-            mapsDeviceBean.setUserId((Integer) jsonObj.get("user_id"));
-//                组装图片路径
-            String path = Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + mb.getDeviceId() + "/" + mb.getUuid() + "/map.png";
-//                组装下载路径
-            String download = Constants.Global.MAP_DOWNLOAD_URL.getValue() + Constants.Global.MAP_DOWNLOAD_PATH.getValue() + "?device_id=" + mb.getDeviceId() + "&uuid=" + mb.getUuid();
-            mapsDeviceBean.setPath(path);
-            mapsDeviceBean.setDownloadUrl(download);
-            mapsDeviceBean.setMapId(mb.getId());
-            mapsDeviceBean.setMapName(mb.getName());
-            mdb.add(mapsDeviceBean);
-        }
-
-        Map<String,Object> mmap=new HashMap<>();
-        mmap.put("count",mapsBeanLists.size());
-        mmap.put("map",mdb);
-        config.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
-        String json = JSON.toJSONString(mmap, config);
-        JSONObject jsonMap = JSONObject.parseObject(json);
-        return  Result.ok().data(jsonMap).msg("");
-
-    }
-
     /**
      * @param
      * @param
@@ -208,6 +120,7 @@ public class MapsController {
 /*map_id: 2
 device_id: 22*/
 //    System.out.println("map_id: "+map_id +" device_id: " +device_id);
+//        logger.info("获取路径列表"+map_id+":"+device_id);
         List<PathsBean> pathsBeans = pathsService.selectByMapIdAndDeviceId(map_id, device_id);
         List lst=new ArrayList();
         if(pathsBeans.size()<=0){
@@ -225,7 +138,6 @@ device_id: 22*/
         String toJson = new Gson().toJson(lst);
         String jsonString="{ successed : true , errorCode: 200, msg: '' ,data:" +toJson+ "}";
         JSONObject jsonObjec = JSONObject.parseObject(jsonString);
-//        System.out.println("jsonObjec: "+jsonObjec);
         return jsonObjec;
     }
 
@@ -292,6 +204,8 @@ device_id: 22*/
      **/
     @GetMapping(value = "/position/lists")
     public JSONObject getPoints(@RequestParam Map<String,Object> map) {
+
+        logger.info("获取点列表:"+map);
         /*{"data":[{"type":7,"name":"2025","angle":237,"gridx":302,"gridy":494}],"map_name":"20211207Test","device_id":106,"obj":13,"cmd":0}*/
 //        System.out.println("mapId: "+mapId+ "  deviceId: "+deviceId);
         /*回调：type，name，point*/
@@ -317,7 +231,6 @@ device_id: 22*/
         String toJson = new Gson().toJson(lst);
         String jsonString="{ successed : true , errorCode: 200, msg: '' ,data:" +toJson+ "}";
         JSONObject jsonObjec = JSONObject.parseObject(jsonString);
-//        System.out.println("jsonObjec: "+jsonObjec);
         return jsonObjec;
     }
     /**

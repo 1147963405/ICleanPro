@@ -64,6 +64,47 @@
       and  work_type = #{workType,jdbcType=INTEGER}  and  device_id = #{deviceId,jdbcType=INTEGER}
     </if>
   </select>
+
+
+  <select id="selectTasksByUserId" resultType="java.util.Map">
+
+    select
+    r.id,r.device_id,r.name as task_name,r.loop_count,r.parameter,r.work_day, r.type,r.work_type,r.work_time,r.work_parts,t.name as  device_name,t.serial as device_serial,m.name as map_name
+    from (select
+    *
+    from tb_task where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where id=#{param1}))) r join
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id
+     </select>
+
+  <select id="selectTasksByParams" resultType="java.util.Map">
+    select
+    r.id,r.device_id,r.name as task_name,r.loop_count,r.parameter,r.work_day, r.type,r.work_type,r.work_time,r.work_parts,t.name as  device_name,t.serial as device_serial,m.name as map_name
+    from (select
+    *
+    from tb_task where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where id=${userId}))) r join
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id  ${tasksParams}
+     </select>
+
+
+  <select id="selectTasks" resultType="java.util.Map" >
+     select
+    r.id,r.device_id,r.name as task_name,r.loop_count,r.parameter,r.work_day, r.type,r.work_type,r.work_time,r.work_parts,t.name as  device_name,t.serial as device_serial,m.name as map_name
+    from (select
+    *
+    from tb_task where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id
+      </select>
+
+  <select id="selectTasksBySelective" resultType="java.util.Map" >
+         select
+    r.id,r.device_id,r.name as task_name,r.loop_count,r.parameter,r.work_day, r.type,r.work_type,r.work_time,r.work_parts,t.name as  device_name,t.type_id as device_type_id,t.`status` as device_status,t.serial as device_serial,m.name as map_name
+    from (select
+    *
+    from tb_task where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
+     tb_device_info t on r.device_id=t.id  join tb_maps m  on r.map_id=m.id   ${tasksParams}
+      </select>
+
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
     delete from tb_task
     where id = #{id,jdbcType=INTEGER}

@@ -42,5 +42,15 @@ public class CustomerServiceImp implements CustomerService {
         return customerBeanMapper.selectBySelective(customerGroupId,customerId);
     }
 
+    @Override
+    public int selectCustomer(Integer userId) {
+        return customerBeanMapper.selectCustomer(userId);
+    }
+
+    @Override
+    public int selectCustomerByPrimaryKey(Integer customerId) {
+        return customerBeanMapper.selectCustomerByPrimaryKey(customerId);
+    }
+
 
 }

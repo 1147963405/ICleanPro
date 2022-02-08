@@ -2,8 +2,10 @@ package com.iclean.pt.sbgl.service;
 
 import com.iclean.pt.sbgl.bean.MapsBean;
 import com.iclean.pt.sbgl.bean.PathsBean;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface MapsService {
 
@@ -15,6 +17,10 @@ public interface MapsService {
     MapsBean selectBySelective(Integer deviceId,String name);
     MapsBean selectByPrimaryKey(Integer id);
     MapsBean selectByIdAndDeviceId(Integer id,Integer deviceId);
+    List<MapsBean> selectByName(String name);
 
-
+    List<Map<String,Object>> selectMapsByUserId(@Param("userId") Integer userId);
+    List<Map<String,Object>> selectMapsByParams(@Param("userId") Integer userId,@Param("mapsParams") String params);
+    List<Map<String,Object>> selectMaps();
+    List<Map<String,Object>> selectMapsBySelective(@Param("mapsParams") String params);
 }

@@ -4,8 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.serializer.SerializeConfig;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.iclean.pt.sbgl.bean.*;
-import com.iclean.pt.sbgl.dao.MqttGateway;
 import com.iclean.pt.sbgl.service.*;
 import com.iclean.pt.utils.*;
 import com.iclean.pt.yhgl.bean.*;
@@ -19,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 import static java.lang.Integer.parseInt;
@@ -27,33 +30,24 @@ import static java.lang.Integer.parseInt;
 public class DeviceController {
 
     private final static Logger logger = LoggerFactory.getLogger(DeviceController.class);
-
-    /*JSON格式转换*/
-    static  SerializeConfig config=new SerializeConfig() ;
-    @Autowired
-    private CustomerDeviceService customerDeviceService;
+//    @Autowired
+//    private CustomerDeviceService customerDeviceService;
     @Autowired
     private DeviceService deviceService;
     @Autowired
     private DeviceTypeService deviceTypeService;
-    @Autowired
-    private PathsService pathsService;
+
     @Autowired
     private MapsService mapsService;
-  /*  @Autowired
-    private UserService userService;*/
+
     @Autowired
     private CustomerService customerService;
-    @Autowired
-    private AlarmService alarmService;
-   /* @Autowired
-    private MqttGateway mqttGateway;*/
+
     @Autowired
     private EventsService eventsService;
+
     @Autowired
-    private TaskService taskService;
-    @Autowired
-    private CleanReportService cleanReportService;
+    private CustomerDeviceService customerDeviceService;
     @Autowired
     private RedisUtil redisUtil;
     @Autowired
@@ -199,146 +193,119 @@ public class DeviceController {
      **/
     @RequestMapping(value = "/device/lists", method = RequestMethod.POST)
     public Result getDeviceList(@RequestParam  Map deviceList)  {
-//        获取设备列表：{start_index=0, count=20, count_flag=true, customer_id=0} fromIndex(40) > toIndex(25)
-        logger.debug("获取设备列表",deviceList);
+//        public Result getDeviceList(@RequestBody  Map deviceList)  {
+        logger.debug("获取设备列表"+deviceList);
         /*通过customer_id筛选：{"customer_id":0,"start_index":0,"count":20,"count_flag":true}: */
         /*通过type_id筛选：{"customer_id":0,"start_index":1,"count":20,"count_flag":true,"type_id":3} */
         /* 通过status筛选:{"customer_id":0,"start_index":0,"count":20,"count_flag":true,"status":0}:
+        {"customer_id":0,"start_index":0,"count":20,"count_flag":true,"serial":"2110"}:
          */
         /*0离线 1空闲 2任务中 3充电中 4急停中*/
         JSONObject jsonObject = commUtil.getJson(deviceList);
         //解析deviceList
-        List<JsonBean>   jsonBeans=new ArrayList<>();
-      /*  List<JsonBean>   jsonBeans=new ArrayList<>();
-        Map<String, Object> deviceMap=null;
-        for (String km : deviceList.keySet()) {
-            deviceMap = JSONObject.parseObject(km);
-        }*/
         int start_index = parseInt(String.valueOf(jsonObject.get("start_index")));
         int count = parseInt(String.valueOf(jsonObject.get("count")));
-        JsonBean jsonBean =null;
-        /*通过customer_id从客户设备备中间表中查询出设备列表*/
-        List<CustomerDeviceBean> customerDeviceBeans = customerDeviceService.selectCustomerWithDevices((Integer) jsonObject.get("customer_id"));
-        /*如果customerDeviceBeans等于0，说明customer_id对应的客户不能存在设备信息，则通过查询tb_device列表*/
-        if (customerDeviceBeans.size() == 0) {
-            /*根据条件获取设备列表*/
-            List<DeviceInfoBean> dibs=deviceService.selectBySelective((Integer)jsonObject.get("type_id"),(Integer) jsonObject.get("status"),String.valueOf(jsonObject.get("name")),String.valueOf(jsonObject.get("serial")));//67
-            if (dibs.size() <= 0) {
-                return Result.ok().msg("the device is null");
-            }
-            /*把线上的和数据库中的设备分憋做处理*/
-//            for (int i=0;i<dibs.size();i++) {
-                for (DeviceInfoBean dib:dibs) {
-                    Object message = redisUtil.hget("message", String.valueOf(dib.getId()));
-//                    logger.info("redis数据:",JSON.toJSONString(message));
-                    JSONObject jsonObj = JSONObject.parseObject((String) message);
-                    if(jsonObj!=null){
-//                    for (Object km : redisUtil.hmget("message").keySet()) {
-                    /*通过device_id对比数据库中的设备与线上的设备，并回显的数据为device_id相同的线上设备信息*/
-//                    if (dib.getId().equals(km) || dib.getId()==km) {
-//                        lst.add(dib.getId());
-                        jsonBean = new JsonBean();
-                        jsonBean.setId(dib.getId());
-                        jsonBean.setSerial(dib.getSerial());
-                        jsonBean.setAddress(dib.getAddress());
-                        jsonBean.setTypeId(dib.getTypeId());
-                        jsonBean.setStatus(dib.getStatus());
-                        jsonBean.setScene(dib.getScene());
-                        jsonBean.setName(dib.getName());
-                        /*组装JSON串*//*
-                         *//*通过设备device_id从设备类型表中获取指定设备类型*/
-                        DeviceTypeBean deviceTypeBean = deviceTypeService.selectByPrimaryKey(dib.getTypeId());
-                        /*通过device_id从地图表中获取指定地图信息*/
-//                        Object msgHget = redisUtil.hget("message", String.valueOf(dib.getId()));
-//                        JSONObject deviceJson = JSONObject.parseObject(String.valueOf(msgHget));
-                        /*获取设备*/
-                        Object statusHget = redisUtil.hget(Constants.Mqtt.TOPIC_SUB_ROBOT_STATUS.getValue(), String.valueOf(dib.getId()));
-//                        logger.info("redis设备状态",statusHget);
-                        JSONObject statusJson = JSONObject.parseObject(String.valueOf(statusHget));
-//                        System.out.println("deviceJson: "+deviceJson);
-                        Object task = jsonObj.get("task");//获取task外层
-//                        System.out.println("task:  "+task);
-                        Object sonser = jsonObj.get("sonser");
-                        JSONObject sta = JSONObject.parseObject(task.toString());//获取task里层
-                        JSONObject ser = JSONObject.parseObject(sonser.toString());
-                        jsonBean.setIsCharging(String.valueOf(ser.get("chargeStatus")));
-                        jsonBean.setBattery((Integer) ser.get("battery"));
-                        jsonBean.setCurrMap((String) sta.get("curr_map"));
-                        jsonBean.setLastLocatedAddress(jsonObj.get("motion"));
-                        /*如果设备版本发生变化，则则使用变更的版本，否则使用之前版本*/
-                        if(statusJson!=null&&statusJson.get("module_info")!=null){
-                            jsonBean.setModuleInfo(statusJson.get("module_info"));
-                        }else {
-                            jsonBean.setModuleInfo(jsonObj.get("module_info"));
-                        }
-                        jsonBean.setPosition(jsonObj.get("motion"));
-                        jsonBean.setCurrMapId(1);
-                        jsonBean.setCurrMapName((String) sta.get("curr_map"));
-                        jsonBean.setType(deviceTypeBean.getType());
-                        jsonBeans.add(jsonBean);
-                }
-            }
+        int customerId = parseInt(String.valueOf(jsonObject.get("customer_id")));
 
-            /*不在线的设备*/
-
+        PageHelper.offsetPage(start_index, count);
+        List<Map<String, Object>> customerList = deviceService.selectDevicesByCustomerId(customerId);
+        if(customerList.size()==0){
+                    if(jsonObject.get("type_id")!=null){
+                        StringBuilder typeIdSql = new StringBuilder();
+                        typeIdSql.append(" and  r.type_id="+jsonObject.get("type_id"));
+                        PageHelper.offsetPage(start_index, count);
+                        customerList=deviceService.selectDevicesBySelective(typeIdSql.toString());
+                    }else if(jsonObject.get("status")!=null){
+                        StringBuilder statusSql = new StringBuilder();
+                        statusSql.append(" and r.status="+jsonObject.get("status"));
+                        PageHelper.offsetPage(start_index, count);
+                        customerList=deviceService.selectDevicesBySelective(statusSql.toString());
+                    }else if(jsonObject.get("serial")!=null){
+                        StringBuilder statusSql = new StringBuilder();
+                        statusSql.append(" and r.serial="+jsonObject.get("serial"));
+                        PageHelper.offsetPage(start_index, count);
+                        customerList=deviceService.selectDevicesBySelective(statusSql.toString());
+                    }else if(jsonObject.get("name")!=null){
+                        //" and  r.name like '%"+jsonObj.get("device_name")+"%'"
+                        StringBuilder statusSql = new StringBuilder();
+                        statusSql.append(" and  r.name like '%"+jsonObject.get("name")+"%'");
+                        PageHelper.offsetPage(start_index, count);
+                        customerList=deviceService.selectDevicesBySelective(statusSql.toString());
+                    }else {
+                        PageHelper.offsetPage(start_index, count);
+                        customerList = deviceService.selectDevices();
+                    }
         }else {
-
-            /*否则通过device_id遍历中间表查询出该客户中的所有设备信息列表*/
-//            for (int i = 0; i < customerDeviceBeans.size(); i++) {
-            for (CustomerDeviceBean cdb : customerDeviceBeans) {
-                DeviceInfoBean deviceInfoBean = deviceService.selectByPrimaryKey(cdb.getDeviceId());
-                if (deviceInfoBean == null) {
-                    return Result.ok().msg("error");
+                if (jsonObject.get("type_id") != null) {
+                    StringBuilder typeIdSql = new StringBuilder();
+                    typeIdSql.append(" and  r.type_id=" + jsonObject.get("type_id"));
+                    PageHelper.offsetPage(start_index, count);
+                    customerList = deviceService.selectDevicesByParams(customerId, typeIdSql.toString());
+                } else if (jsonObject.get("status") != null) {
+                    StringBuilder statusSql = new StringBuilder();
+                    statusSql.append(" and r.status=" + jsonObject.get("status"));
+                    PageHelper.offsetPage(start_index, count);
+                    customerList = deviceService.selectDevicesByParams(customerId, statusSql.toString());
+                }else if (jsonObject.get("serial") != null) {
+                    StringBuilder statusSql = new StringBuilder();
+                    statusSql.append(" and r.serial=" + jsonObject.get("serial"));
+                    PageHelper.offsetPage(start_index, count);
+                    customerList = deviceService.selectDevicesByParams(customerId, statusSql.toString());
+                }else if (jsonObject.get("name") != null) {
+                    StringBuilder statusSql = new StringBuilder();
+                    statusSql.append(" and  r.name like '%"+jsonObject.get("name")+"%'");
+                    PageHelper.offsetPage(start_index, count);
+                    customerList = deviceService.selectDevicesByParams(customerId, statusSql.toString());
                 }
-                /*组装JSON串*/
-                jsonBean = new JsonBean();
-                jsonBean.setId(deviceInfoBean.getId());
-                jsonBean.setSerial(deviceInfoBean.getSerial());
-                jsonBean.setAddress(deviceInfoBean.getAddress());
-                jsonBean.setTypeId(deviceInfoBean.getTypeId());
-                jsonBean.setStatus(deviceInfoBean.getStatus());
-                jsonBean.setScene(deviceInfoBean.getScene());
-                jsonBean.setName(deviceInfoBean.getName());
-                Object pInfo = JSONObject.parse(deviceInfoBean.getModuleInfo());
-                jsonBean.setModuleInfo(pInfo);
-                Object parse = JSONObject.parse(deviceInfoBean.getLastLocatedAddress());
-                jsonBean.setLastLocatedAddress(parse);
-                jsonBean.setDescription(deviceInfoBean.getDescription());
-
-                /*通过设备device_id从设备类型表中获取指定设备类型*/
-                DeviceTypeBean deviceTypeBean = deviceTypeService.selectByPrimaryKey(deviceInfoBean.getTypeId());
-                /*通过device_id从地图表中获取指定地图信息*/
-                jsonBean.setType(deviceTypeBean.getType());
-                jsonBeans.add(jsonBean);
-            }
-
         }
+        long total = ((com.github.pagehelper.Page) customerList).getTotal();
 
-        List<JsonBean> jsonBeanList = null;
-        if (start_index == 0) {
-            if(count > jsonBeans.size()){
-                jsonBeanList = jsonBeans.subList(start_index, jsonBeans.size());
+        for (Map<String,Object> map:customerList) {
+//            logger.info("deviceIds"+map.get("module_info"));
+            //redis
+            Object message = redisUtil.hget("message", String.valueOf(map.get("id")));
+            JSONObject messageJson = JSONObject.parseObject((String) message);
+            if(messageJson!=null){
+                Object task = messageJson.get("task");//获取task外层
+                Object sonser = messageJson.get("sonser");
+                JSONObject sta = JSONObject.parseObject(task.toString());//获取task里层
+                JSONObject ser = JSONObject.parseObject(sonser.toString());
+                map.put("isCharging",ser.get("chargeStatus"));
+                map.put("battery",ser.get("battery"));
+                JSONObject motion = JSONObject.parseObject(messageJson.get("motion").toString());
+                map.put("last_located_address",motion);
+                map.put("position",motion);
+                map.put("alarm_count",0);
+//                map.put("status",sta.get("status"));
+                //maps
+                MapsBean mapsBean = mapsService.selectBySelective(Integer.parseInt(map.get("id").toString()), String.valueOf(sta.get("curr_map")));
+                if(mapsBean!=null){
+                    String path = Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
+                    map.put("curr_map_id",mapsBean.getId());
+                    map.put("curr_map_name",mapsBean.getName());
+                    map.put("curr_map",path);
+                }else {
+                    map.put("curr_map_id",-1);
+                    map.put("curr_map_name","");
+                    map.put("curr_map","");
+                }
             }else {
-                jsonBeanList = jsonBeans.subList(start_index, count);
+                map.put("isCharging",0);
+                map.put("battery",0);
+                JSONObject last_located_address = JSONObject.parseObject(map.get("last_located_address").toString());
+                map.put("last_located_address",last_located_address);
+                map.put("position",last_located_address);
+                map.put("curr_map_id",-1);
+                map.put("curr_map_name","");
+                map.put("curr_map","");//alarm_count
+                map.put("alarm_count",0);
             }
-        } else {
-            int Tcount = count + start_index;
-            int size = jsonBeans.size();
-            if (Tcount >size) {
-                jsonBeanList = jsonBeans.subList(start_index, size);
-            } else {
-                jsonBeanList = jsonBeans.subList(start_index, Tcount);
-            }
-
         }
-        Map<String, Object> map = new HashMap<>();
-        map.put("count", jsonBeans.size());
-        map.put("device", jsonBeanList);
-        /*通过JSON转换为下划线格式参数*/
-        config.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
-        String toJSON = JSON.toJSONString(map, config);
-        JSONObject deviceM = JSONObject.parseObject(toJSON);
-        return Result.ok().data(deviceM).msg("");
+
+        Map<String, Object> map = new ConcurrentHashMap<>();
+        map.put("count", total);
+        map.put("device", customerList);
+            return Result.ok().data(map).msg("");
     }
 
 
@@ -364,6 +331,7 @@ public class DeviceController {
         }
         dp.put("device_id",id);
         JSONObject jsonObject = JSONObject.parseObject(String.valueOf(redisUtil.hget("message", String.valueOf(id))));
+        logger.info("jsonObject"+jsonObject);
         if(jsonObject==null){
             return Result.error().msg("the device_id is not exist!");
         }
@@ -553,249 +521,6 @@ public class DeviceController {
         return Result.error().data("exist",true).msg("the device name is not exist!");
     }
 
-    /**
-     * @param
-     * @param
-     * @return Result
-     * @description 添加路径
-     **/
-    @PostMapping(value = "/path/add")
-    public Result addPaths() {
-
-        /*
-        * 步骤：
-        * 1.通过mqtt订阅的主题iclean/robot/messageEx获取到设备新增的地图信息
-        * 2.通过device_id获取tb_maps表中的map_id
-        * 3.通过map封装
-        * */
-          /*1*/
-        logger.info("添加路径","功能待定。。。。。");
-        JSONObject jb = JSON.parseObject("");
-        /*2*/
-        MapsBean mapsBean = mapsService.selectBySelective((Integer) jb.get("device_id"), String.valueOf(jb.get("map_name")));
-        /*组装实体PathsBean*/
-        PathsBean pathsBean=new PathsBean();
-        pathsBean.setPath(JSONObject.toJSONString(jb.get("msg")));
-        pathsBean.setType((Integer) jb.get("type"));
-        pathsBean.setName( String.valueOf(jb.get("origin_name")));
-        pathsBean.setDeviceId((Integer) jb.get("device_id"));
-        pathsBean.setMapId(mapsBean.getId());
-        pathsBean.setUpdateTime(  new Date().getTime());
-        int insert = pathsService.insert(pathsBean);
-        if(insert>0){
-            return Result.ok().msg("路径添加成功");
-        }
-        return Result.ok().msg("路径添加失败");
-    }
-
-    /**
-     * @param
-     * @param
-     * @return Result
-     * @description 修改路径
-     **/
-    @PostMapping(value = "/path/update")
-    public Result updatePaths() {
-
-        /*步骤：
-        * 1.通过mqtt获取paths名称并查询数据库表tb_paths获取指定路径实体bean
-        * 2.更新mqtt中已变更的指定路径信息
-        * 3.*/
-        /*1*/
-        logger.info("修改路径","功能未做。。。。。");
-        JSONObject jb = JSON.parseObject("");
-        /*通过map_id和path_name获取指定地图路径*/
-        PathsBean pathsBean = pathsService.selectByPrimaryKey(null, String.valueOf(jb.get("origin_name")));
-//        System.out.println("pathsBean: "+pathsBean);
-        /*2*/
-        pathsBean.setPath(JSONObject.toJSONString(jb.get("msg")));
-        pathsBean.setType((Integer) jb.get("type"));
-        pathsBean.setName( String.valueOf(jb.get("new_name")));
-//        pathsBean.setDeviceId(pathsBean.getDeviceId());
-        pathsBean.setUpdateTime( new Date().getTime());
-//        pathsBean.setMapId(pathsBean.getMapId());
-        int updateByPrimaryKey = pathsService.updateByPrimaryKey(pathsBean);
-        if(updateByPrimaryKey>0){
-//            System.out.println("updateByPrimaryKey: "+pathsBean);
-            return Result.ok().msg("修改路径成功");
-        }
-        return Result.ok().msg("修改路径失败");
-    }
-
-
-
-    /**
-     * @param
-     * @param
-     * @return Result
-     * @description 获取报警列表
-     **/
-    @RequestMapping(value = "/alarm/lists", method = RequestMethod.POST)
-    public Result getAarmLists(@RequestParam Map<String,Object> map) {
-        logger.info("获取报警列表："+map);
-/*{"user_id":1,"start_index":0,"beginTime":"","endTime":"","count":100,"count_flag":true,"status":0}
-{
-context: "急停按下"
-device_id: 183
-device_name: "老化168"
-id: 195
-start_time: "2021-12-03 12:00:26"
-status: 0
-update_time: "2021-12-03 12:00:26"}
-iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","device_id":146,"message_type":"event"}
-{"user_id":1,"start_index":0,"device_id":54,"beginTime":"","endTime":"","count":10,"count_flag":true,"status":0}:
-*/
-        /*步骤：
-         * 2.通过user_id获取指定客户下的所有设备告警信息 user_id:customer_id:devices
-         * 3.如果user_id指定的客户不存在，则查询所有客户下的所有设备的告警信息
-         * 4.组装JSON对象返回
-         * */
-
-        JSONObject jsonObj = commUtil.getJson(map);
-        int counts;
-        int startIndex = parseInt(jsonObj.get("start_index").toString());
-        int count = parseInt(jsonObj.get("count").toString());
-        /*2*/
-        List<CustomerBean> customerBeans = null;
-        List<AlarmBean> alarmBeans =null;
-        List lst=new ArrayList();
-        if (jsonObj.get("device_id")!=null){
-            Object user = redisUtil.hget("users", String.valueOf(jsonObj.get("user_id")));
-            UserBean userBean = BeanUtil.copyProperties(user, UserBean.class);
-            CustomerBean customerBean = customerService.selectByPrimaryKey(userBean.getCustomerId());
-            /*2*/
-            if (customerBean == null) {
-                customerBeans = customerService.selectBySelective(null, null);
-            } else {
-                customerBeans = customerService.selectBySelective(null, customerBean.getId());
-            }
-            Map<String, Object> maps = new HashMap<>();
-            for (CustomerBean cb : customerBeans) {
-                List<CustomerDeviceBean> customerDeviceBeans = customerDeviceService.selectCustomerWithDevices(cb.getId());
-                for (CustomerDeviceBean cdb : customerDeviceBeans) {
-                    if (cdb.getDeviceId() == jsonObj.get("device_id") || cdb.getDeviceId().equals(jsonObj.get("device_id"))) {
-                        maps.put("deviceId", cdb.getDeviceId());
-                        break;
-                    }
-                }
-            }
-            alarmBeans = alarmService.selectBySelective((Integer) maps.get("deviceId"), Integer.parseInt(jsonObj.get("status").toString()), startIndex, count);
-            counts = alarmService.selectBySelective((Integer) maps.get("deviceId"), parseInt(String.valueOf(jsonObj.get("status"))), 0, 0).size();
-        }else {
-              alarmBeans =alarmService.selectList(parseInt(String.valueOf(jsonObj.get("status"))),startIndex,count);
-              counts= alarmService.selectList(parseInt(String.valueOf(jsonObj.get("status"))),0,0).size();
-        }
-
-        if(alarmBeans.size()>0){
-            for (AlarmBean ab:alarmBeans) {
-                DeviceInfoBean deviceInfoBean = deviceService.selectByPrimaryKey(ab.getDeviceId());
-                //组装JSON对象
-                Map<String, Object> beanMap = new HashMap<>();
-                beanMap.put("context", ab.getContext());
-                beanMap.put("device_id", ab.getDeviceId());
-                if(deviceInfoBean==null){
-                    beanMap.put("device_name","");
-                }else {
-                    beanMap.put("device_name",deviceInfoBean.getName());
-                }
-                beanMap.put("id", ab.getId());
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String ut = simpleDateFormat.format(ab.getUpdateTime());
-                String st = simpleDateFormat.format(ab.getUpdateTime());
-                beanMap.put("start_time", st);
-                beanMap.put("status", ab.getStatus());
-                beanMap.put("update_time", ut);
-                lst.add(beanMap);
-            }
-        }
-        Map<String,Object> jsonMap=new HashMap<>();
-        jsonMap.put("count",counts);
-        jsonMap.put("alarms",lst);
-        return Result.ok().data(jsonMap).msg("");
-    }
-
-    /**
-     * @param
-     * @param
-     * @return Result
-     * @description 获取任务列表
-     **/
-    @RequestMapping(value = "/task/lists", method = RequestMethod.POST)
-    public Result getTaskList(@RequestParam Map<String,Object> map){
-        logger.info("获取任务列表:"+map);
-        /*{"user_id":1,"start_index":0,"count":10}:
-         * 条件筛选：{"user_id":1,"start_index":0,"count":10,"device_type_id":1}: 设备类型 device_type_id
-           {"user_id":1,"start_index":0,"count":10,"device_status":"1"}:  设备状态 device_status
-            {"user_id":1,"start_index":0,"count":10,"task_mode":"0"}:   任务类型work_type
-             {"user_id":1,"start_index":0,"count":10,"device_name":"长桥街"}:
-             {"user_id":1,"device_id":128,"start_index":0,"count":9999}: */
-      /*步骤
-      * 1通过user获取到指定的客户
-      * 2如果客户存在则通过该客户查询名下的所有设备，以及设备下的所有任务
-      * 3.否则查询所有客户及客户名下的所有设备，以及设备下的任务
-      *
-      * */
-
-        JSONObject jsonObj = commUtil.getJson(map);
-        int startIndex = parseInt(String.valueOf(jsonObj.get("start_index")));
-        int count = parseInt(String.valueOf(jsonObj.get("count")));
-        Integer deviceId =1;//存在bug,前端没提供该参数
-        List<CustomerBean> customerBeans =null;
-        Object user = redisUtil.hget("users", String.valueOf(jsonObj.get("user_id")));
-        UserBean userBean = BeanUtil.copyProperties(user, UserBean.class);
-     CustomerBean customerBean = customerService.selectByPrimaryKey(userBean.getCustomerId());
-    if(customerBean==null){
-        customerBeans = customerService.selectBySelective(null, null);
-    }else {
-        customerBeans = customerService.selectBySelective(null, customerBean.getId());
-    }
-        Map<Integer,Object> deviceMaps=new HashMap<>();
-    for (CustomerBean cb:customerBeans ) {
-        List<CustomerDeviceBean> customerDeviceBeans = customerDeviceService.selectCustomerWithDevices(cb.getId());
-        if(customerDeviceBeans.size()>0){
-            for (CustomerDeviceBean cdb : customerDeviceBeans) {
-                deviceMaps.put(cdb.getDeviceId(),cdb.getDeviceInfoBean());
-            }
-        }
-    }
-        List lists=new ArrayList();
-        for (Map.Entry<Integer,Object> entry:deviceMaps.entrySet()) {
-            List<TaskBean> taskBeans = taskService.selectSelective(entry.getKey(), startIndex, count);
-            JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(entry.getValue()));
-            for (TaskBean tbs:taskBeans) {
-                //组装JSON对象
-                Map<String,Object> beanMap=new HashMap<>();
-                beanMap.put("id",tbs.getId());
-                beanMap.put("task_name",tbs.getName());
-                beanMap.put("loop_count",tbs.getLoopCount());
-                beanMap.put("device_id",tbs.getDeviceId());
-                beanMap.put("parameter",tbs.getParameter());
-                if(jsonObject==null){
-                    beanMap.put("device_serial","");
-                    beanMap.put("device_name","");
-                }else {
-                    beanMap.put("device_serial",jsonObject.get("serial"));
-                    beanMap.put("device_name",jsonObject.get("name"));
-                }
-                beanMap.put("work_day",tbs.getWorkDay());
-                beanMap.put("type",tbs.getType());
-                beanMap.put("work_type",tbs.getWorkType());
-                beanMap.put("work_time",tbs.getWorkTime());
-                MapsBean mapsBean = mapsService.selectByPrimaryKey(tbs.getMapId());
-                if(mapsBean!=null){
-                    beanMap.put("map_name",mapsBean.getName());
-                }else {
-                    beanMap.put("map_name","");
-                }
-                beanMap.put("work_parts",tbs.getWorkParts());
-                lists.add(beanMap);
-            }
-        }
-        Map<String,Object> jsonMap=new HashMap<>();
-        jsonMap.put("count",lists.size());
-        jsonMap.put("tasks",lists);
-        return Result.ok().data(jsonMap).msg("");
-    }
 
     /**
      * @param
@@ -845,9 +570,11 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
      * @description 获取事件列表
      **/
     @RequestMapping(value = "/event/lists", method = RequestMethod.POST)
-    public Result getEventLists(@RequestParam Map<String,Object> map){
-        logger.debug("获取设备列表",map);
-/*{"user_id":1,"start_index":0,"beginTime":"","endTime":"","count":10,"count_flag":true,"device_id":113,"status":0}:
+    public Result getEventLists(@RequestParam Map map){
+//        public Result getEventLists(@RequestBody Map map){
+        logger.info("获取设备列表"+map);
+/*{start_index=0, beginTime=, endTime=, count=20, count_flag=true, status=0, user_id=1}
+ {"user_id":1,"start_index":0,"beginTime":"","endTime":"","count":10,"count_flag":true,"device_id":113,"status":0}:
  {
                 "type": 0,
                 "status": 0,
@@ -858,166 +585,63 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
             }
  */
         JSONObject jsonObj = commUtil.getJson(map);
+        logger.info("获取设备列表jsonObj"+jsonObj);
         int startIndex = parseInt(jsonObj.get("start_index").toString());
         int count = parseInt(jsonObj.get("count").toString());
-        List eventLists=new ArrayList();
-        int size=0;
-     List<EventsBean> eventsBeans = eventsService.selectBySelective(Integer.parseInt(jsonObj.get("device_id").toString()),Integer.parseInt(jsonObj.get("status").toString()), startIndex, count);
-   if(eventsBeans.size()>0){
-       size= eventsService.selectBySelective(Integer.parseInt(jsonObj.get("device_id").toString()),Integer.parseInt(jsonObj.get("status").toString()),0,0).size();
-    for (EventsBean ebs:eventsBeans) {
-        //组装JSON对象
-        Map<String,Object> beanMap=new HashMap<>();
-        beanMap.put("context",ebs.getContext());
-        beanMap.put("device_name",deviceService.selectByPrimaryKey(ebs.getDeviceId()).getName());
-        beanMap.put("id",ebs.getId());
-        beanMap.put("type",ebs.getType());
-        beanMap.put("status",ebs.getStatus());
-        Date d=new Date(ebs.getUpdateTime());
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String dateString = formatter.format(d);
-        beanMap.put("update_time",dateString);
-        eventLists.add(beanMap);
-    }
-}
-        List<JsonBean> jsonBeanList = null;
-        if (startIndex == 0) {
-            if(count > eventLists.size()){
-                jsonBeanList = eventLists.subList(startIndex, eventLists.size());
+        int userId = parseInt(jsonObj.get("user_id").toString());
+        List<Map<String, Object>> eventsList =null;
+        int counts = customerService.selectCustomer(userId);
+        if(counts==0){
+            if(jsonObj.get("device_id")!=null){
+                StringBuilder deviceNameSql = new StringBuilder();
+                deviceNameSql.append(" and r.device_id="+jsonObj.get("device_id"));
+                PageHelper.offsetPage(startIndex, count);
+                eventsList=eventsService.selectEventsBySelective(deviceNameSql.toString());
+            }/*else if(jsonObj.get("status")!=null){
+                StringBuilder statusSql = new StringBuilder();
+                statusSql.append(" and t.status="+jsonObj.get("status"));
+                PageHelper.offsetPage(startIndex, count);
+                eventsList=eventsService.selectEventsBySelective(statusSql.toString());
+            }*/else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
+                StringBuilder timeSql = new StringBuilder();
+                timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                PageHelper.offsetPage(startIndex, count);
+                eventsList=eventsService.selectEventsBySelective(timeSql.toString());
             }else {
-                jsonBeanList = eventLists.subList(startIndex, count);
-            }
-        } else {
-            int Tcount = count + startIndex;
-            int sizes = eventLists.size();
-            if (Tcount >size) {
-                jsonBeanList = eventLists.subList(startIndex, sizes);
-            } else {
-                jsonBeanList = eventLists.subList(startIndex, Tcount);
+                PageHelper.offsetPage(startIndex, count);
+                eventsList=eventsService.selectEvents();
             }
 
+        }else {
+            if(jsonObj.get("device_id")!=null){
+                StringBuilder deviceNameSql = new StringBuilder();
+                deviceNameSql.append(" and r.device_id="+jsonObj.get("device_id"));
+                PageHelper.offsetPage(startIndex, count);
+                eventsList=eventsService.selectEventsByParams(userId,deviceNameSql.toString());
+            }/*else if(jsonObj.get("status")!=null){
+                StringBuilder statusSql = new StringBuilder();
+                statusSql.append(" and t.status="+jsonObj.get("status"));
+                PageHelper.offsetPage(startIndex, count);
+                eventsList=eventsService.selectEventsByParams(userId,statusSql.toString());
+            }*/else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
+                StringBuilder timeSql = new StringBuilder();
+                timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                PageHelper.offsetPage(startIndex, count);
+                eventsList=eventsService.selectEventsByParams(userId,timeSql.toString());
+            }else {
+                PageHelper.offsetPage(startIndex, count);
+                eventsList=eventsService.selectEventsByUserId(userId);
+            }
         }
-        Map<String,Object> jsonMap=new HashMap<>();
-        jsonMap.put("count",size);
-        jsonMap.put("events",jsonBeanList);
+
+        long total = ((com.github.pagehelper.Page) eventsList).getTotal();
+
+        Map<String,Object> jsonMap=new ConcurrentHashMap<>();
+        jsonMap.put("count",total);
+        jsonMap.put("events",eventsList);
         return Result.ok().data(jsonMap).msg("");
     }
 
-
-    /**
-     * @param
-     * @param
-     * @return Result
-     * @description 新增任务
-     **/
-    @PostMapping(value = "/task/add")
-    public Result addTask(@RequestParam Map<String,Object> map) {
-
-       /*{"name":"20211216",
-       "device_id":182,
-       "parameter":[{"name":"handdraw","start_param":{"name":"2","zid":1074,"path":"path1"}}],
-       "map_id":486,
-       "work_time":0,
-       "work_day":0,
-       "work_type":0,
-       "work_types":[16],
-       "loop_count":1,
-       "type":16,
-       "work_parts":{"speed":0,"BLDC":0,"SuckerRod":0,"DiscBrush":0,"DiscBrushRod":0},
-       "map_name":"2"}: */
-
-       /*步骤
-       * 1.获取map
-       * 2.解析map,获取map中的数据
-       * 3.组装taskbean实例对象
-       * */
-        JSONObject jsonObj = commUtil.getJson(map);
-        /*2、3*/
-        TaskBean taskBean=new TaskBean();
-        taskBean.setDeviceId(parseInt(String.valueOf(jsonObj.get("device_id"))));
-        taskBean.setLoopCount(parseInt(String.valueOf(jsonObj.get("loop_count"))));
-        taskBean.setMapId(parseInt(String.valueOf(jsonObj.get("map_id"))));
-        taskBean.setName(String.valueOf(jsonObj.get("name")));
-        taskBean.setParameter(String.valueOf(jsonObj.get("parameter")));
-        taskBean.setType(parseInt(String.valueOf(jsonObj.get("type"))));
-        taskBean.setWorkDay(parseInt(String.valueOf(jsonObj.get("work_day"))));
-        taskBean.setWorkParts(String.valueOf(jsonObj.get("work_parts")));
-        taskBean.setWorkTime(parseInt(String.valueOf(jsonObj.get("work_time"))));
-        taskBean.setWorkType(parseInt(String.valueOf(jsonObj.get("work_type"))));
-        taskBean.setUpdateTime( new Date().getTime());
-
-        int insert = taskService.insert(taskBean);
-        if(insert<=0){
-            return Result.ok().msg("新增任务失败");
-        }
-        return Result.ok().msg("新增任务成功");
-    }
-
-    /**
-     * @param
-     * @param
-     * @return Result
-     * @description 更新任务
-     **/
-    @PostMapping(value = "/task/update")
-    public Result updateTask(@RequestParam Map<String,Object> map) {
-/*{"work_day":1,
-"work_parts":{"speed":0,"BLDC":0,"SuckerRod":0,"DiscBrush":0,"DiscBrushRod":0},
-"id":1221,
-"loop_count":5,
-"parameter":[{"start_param":{"path":"path1","zid":1048,"name":"a"},"name":"ZoneTask"}],
-"map_name":"2",
-"work_type":0,
-"work_time":54000,
-"type":16,
-"name":"20211216t",
-"old_name":"20211216",
-"device_id":182
-}: */
-        /*步骤
-        * 1.获取map并解析map中的数据
-        * 2.通过任务id获取任务对象
-        * 3.对任务对象进行更新
-        * */
-/*1*/
-        JSONObject jsonObj = commUtil.getJson(map);
-        TaskBean taskBean = taskService.selectByPrimaryKey(parseInt(String.valueOf(jsonObj.get("id"))));
-        taskBean.setLoopCount(parseInt(String.valueOf(jsonObj.get("loop_count"))));
-        taskBean.setName(String.valueOf(jsonObj.get("name")));
-        taskBean.setParameter(String.valueOf(jsonObj.get("parameter")));
-        taskBean.setType(parseInt(String.valueOf(jsonObj.get("type"))));
-        taskBean.setWorkDay(parseInt(String.valueOf(jsonObj.get("work_day"))));
-        taskBean.setWorkParts(String.valueOf(jsonObj.get("work_parts")));
-        taskBean.setWorkTime(parseInt(String.valueOf(jsonObj.get("work_time"))));
-        taskBean.setWorkType(parseInt(String.valueOf(jsonObj.get("work_type"))));
-        taskBean.setUpdateTime(  new Date().getTime());
-
-        int count = taskService.updateByPrimaryKey(taskBean);
-        if(count<=0){
-            return Result.ok().msg("更新任务失败");
-        }
-        return Result.ok().msg("更新任务成功");
-    }
-
-    /**
-     * @param
-     * @param
-     * @return Result
-     * @description 删除任务
-     **/
-    @GetMapping(value = "/task/delete")
-    public Result deleteTask(@RequestParam Map<String,Object> map) {
-/*id: 1221
-map_name: 2
-device_id: 182
-name: 20211216t*/
-
-        int count = taskService.deleteByPrimaryKey(parseInt(String.valueOf(map.get("id"))));
-        if(count>0){
-            return Result.ok().msg("删除任务失败");
-        }
-        return Result.ok().msg("删除任务成功");
-    }
     /**
      * @param
      * @param
@@ -1035,195 +659,6 @@ name: 20211216t*/
 
         return Result.ok().msg("发命令给设备成功");
     }
-    /**
-     * @param
-     * @param
-     * @return Result
-     * @description 获取清洁报告列表
-     **/
-    @PostMapping(value = "/clean_report/detail")
-    public Result getCleanReportList(@RequestParam Map<String,Object> cleanReportMap) {
- /*
-{"user_id":1,"start_index":0,"count":10,"count_flag":true,"beginTime":"","endTime":""}:
-* */
-        JSONObject jsonObj = commUtil.getJson(cleanReportMap);
-        /*2*/
-        List<CustomerBean> customerBeans =null;
-        Object user = redisUtil.hget("users", String.valueOf(jsonObj.get("user_id")));
-        UserBean userBean = BeanUtil.copyProperties(user, UserBean.class);
-        CustomerBean customerBean = customerService.selectByPrimaryKey(userBean.getCustomerId());
-        /*2*/
-        if(customerBean==null){
-            customerBeans = customerService.selectBySelective(null, null);
-        }else {
-            customerBeans = customerService.selectBySelective(null, customerBean.getId());
-        }
-//        System.out.println("customerBeans.size: "+customerBeans.size());
-        List cleanReports=new ArrayList();
-        Map<Integer,Object> customerBeanMap=new HashMap<>();
-//        List<Map> mapList=new ArrayList<>();
-        for (CustomerBean cb:customerBeans ) {
-            customerBeanMap.put(cb.getId(),cb);
-        }
-
-        Map<Integer,Object> customerDeviceMap=new HashMap<>();
-        for (Integer customerId:customerBeanMap.keySet()) {
-                List<CustomerDeviceBean> customerDeviceBeans = customerDeviceService.selectCustomerWithDevices(customerId);
-            if(customerDeviceBeans.size()>0){
-                for (CustomerDeviceBean cbd:customerDeviceBeans) {
-                    Map<String,Object> paramMap=new HashMap<>();
-                    paramMap.put("device_serial",cbd.getDeviceInfoBean().getSerial());
-                    paramMap.put("device_name",cbd.getDeviceInfoBean().getName());
-                    paramMap.put("device_type_id",cbd.getDeviceInfoBean().getTypeId());
-                    paramMap.put("device_id",cbd.getDeviceInfoBean().getId());
-                    customerDeviceMap.put(cbd.getDeviceInfoBean().getId(),paramMap);
-                }
-            }
-        }
-        Map<Integer,Object> resultMap=new HashMap<>();
-        for (Map.Entry<Integer,Object> entry : customerDeviceMap.entrySet()) {
-            //获取所有所有匹配的客户下的所有设备
-            JSONObject jsonMap = JSONObject.parseObject(JSON.toJSONString(entry.getValue()));
-            List<CleanReportBean>  cleanReportLst = cleanReportService.selectSelective((Integer) jsonMap.get("device_id"),0, 0);
-            if(cleanReportLst.size()>0){
-                resultMap.put(entry.getKey(),cleanReportLst);
-            }
-        }
-        for (Map.Entry<Integer,Object> entry : resultMap.entrySet()) {
-            System.out.println(entry.getValue());
-        }
-
-//        System.out.println("cleanReportList: "+cleanReportList.size());
-//        System.out.println("futures: "+resultMap.size());
-        /*for (Map.Entry<Integer,Object> entry : resultMap.entrySet()) {
-            JSONObject cleanMap = JSONObject.parseObject(JSON.toJSONString(entry.getValue()));
-//            System.out.println("key = " + entry.getKey()+", value" +jsonMap);
-            MapsBean mapsBean =mapsService.selectByIdAndDeviceId((Integer) cleanMap.get("map_id"),(Integer)cleanMap.get("device_id"));
-            Map<String,Object> beanMap=new HashMap<>();
-            if(mapsBean!=null){
-//                            通过比较线上的地图name来获取指定的地图
-                String path = Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
-                //组装JSON对象
-                beanMap.put("map_id",mapsBean.getId());
-                beanMap.put("map_name",mapsBean.getName());
-                beanMap.put("map_path",path);
-            }else {
-                beanMap.put("map_id","");
-                beanMap.put("map_name","");
-                beanMap.put("map_path","");
-            }
-            beanMap.put("update_time",cleanMap.get("update_time"));
-            beanMap.put("clean_area",cleanMap.get("clean_area"));
-            beanMap.put("id",cleanMap.get("id"));
-            beanMap.put("name",cleanMap.get("name"));
-            beanMap.put("type",cleanMap.get("type"));
-            beanMap.put("use_time",cleanMap.get("use_time"));
-            beanMap.put("report",cleanMap.get("report"));
-            beanMap.put("device_serial",cleanMap.get("device_serial"));
-            beanMap.put("device_name",cleanMap.get("device_name"));
-            beanMap.put("device_type_id",cleanMap.get("device_type_id"));
-            beanMap.put("device_id",cleanMap.get("device_id"));
-            cleanReportList.add(beanMap);
-        }*/
 
 
-        /*    Map<String,Object> maps=new HashMap<>();
-            maps.put("count",cleanReportLst.size());
-            maps.put("reports",cleanReportLst);*/
-            return  Result.ok().msg("");
-    }
-
-
-    /**
-     * @param
-     * @param
-     * @return Result
-     * @description 获取指定设备下的清洁报告
-     **/
-    @PostMapping(value = "/clean_report/info")
-    public Result getCleanReport(@RequestParam Map<String,Object> cleanReportMap) {
-logger.info("获取指定设备下的清洁报告:"+cleanReportMap);
-
-        JSONObject jsonObj = commUtil.getJson(cleanReportMap);
-        DeviceInfoBean deviceInfoBean = deviceService.selectByIdOrName(null, String.valueOf(jsonObj.get("device_name")));
-        if(deviceInfoBean==null){
-            return  Result.ok().msg("该设备不存在");
-        }
-        List<CleanReportBean> cleanReportBeans = cleanReportService.selectSelective(deviceInfoBean.getId(),Integer.parseInt(jsonObj.get("start_index").toString()),Integer.parseInt(jsonObj.get("count").toString()));
-        List<CleanReportBean> cleanReportLsts = cleanReportService.selectSelective(deviceInfoBean.getId(), 0, 0);
-        if(cleanReportBeans.size()<0){
-            return  Result.ok().msg("该设备没有清洁报告");
-        }
-        List cleanReportLists=new ArrayList();
-        for (CleanReportBean crb:cleanReportBeans) {
-            MapsBean mapsBean = mapsService.selectByIdAndDeviceId(crb.getMapId(),crb.getDeviceId());
-            Map<String,Object> beanMap=new HashMap<>();
-            if(mapsBean!=null){
-//                            通过比较线上的地图name来获取指定的地图
-                String path = Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
-                //组装JSON对象
-                beanMap.put("map_id",mapsBean.getId());
-                beanMap.put("map_name",mapsBean.getName());
-                beanMap.put("map_path",path);
-            }else {
-                beanMap.put("map_id","");
-                beanMap.put("map_name","");
-                beanMap.put("map_path","");
-            }
-            beanMap.put("update_time",crb.getUpdateTime());
-            beanMap.put("clean_area",crb.getCleanArea());
-            beanMap.put("id",crb.getId());
-            beanMap.put("name",crb.getName());
-            beanMap.put("type",crb.getType());
-            beanMap.put("use_time",crb.getUseTime());
-            beanMap.put("report",JSONObject.parseObject(crb.getReport()));
-            beanMap.put("device_serial",deviceInfoBean.getSerial());
-            beanMap.put("device_name",deviceInfoBean.getName());
-            beanMap.put("device_type_id",deviceInfoBean.getTypeId());
-            beanMap.put("device_id",deviceInfoBean.getId());
-            cleanReportLists.add(beanMap);
-        }
-        Map<String,Object> map=new HashMap<>();
-        map.put("count",cleanReportLsts.size());
-        map.put("reports",cleanReportLists);
-        return  Result.ok().data(map).msg("");
-    }
-
-    /**
-     * @param
-     * @param
-     * @return Result
-     * @description 告警状态设置
-     **/
-    @PostMapping(value = "/alarm/set_status")
-    public Result  setStatus(@RequestParam Map<String,Object> alarmMap) {
-
-
-        JSONObject jsonObj = commUtil.getJson(alarmMap);
-        JSONArray jsonArray = new JSONArray().fromObject(jsonObj.get("ids"));
-        AlarmBean alarmBean = alarmService.selectByPrimaryKey((Integer) jsonArray.get(0));
-        System.out.println("alarmBean: "+alarmBean);
-        if(alarmBean==null){
-            return Result.error().msg("");
-        }
-        return Result.ok().msg("");
-    }
-
-    /**
-     * @param
-     * @param
-     * @return Result
-     * @description 获取今天的任务信息
-     **/
-    @PostMapping(value = "/task/today_task_info")
-    public Result  getTodayTaskInfo(Integer user_id) {
-
-        /*步骤：
-         * 1.通过用户id获取到指定客户，然后通过客户id获取到指定客户下的所有设备，并通过设备id获取到指定设备名下的所有任务
-         * 2.如果用户id对应的客户id不存在,则查询所有客户信息
-         * 3.
-         * */
-
-        return null;
-    }
  }

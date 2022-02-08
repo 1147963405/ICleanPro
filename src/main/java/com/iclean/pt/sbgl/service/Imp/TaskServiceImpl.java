@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 @Service
@@ -58,4 +59,26 @@ public class TaskServiceImpl implements TaskService {
     public List<TaskBean> selectList(Integer startIndex, Integer count) {
         return taskBeanMapper.selectList(startIndex,count);
     }
+
+    @Override
+    public List<Map<String, Object>> selectTasksByUserId(Integer userId) {
+        return taskBeanMapper.selectTasksByUserId(userId);
+    }
+
+    @Override
+    public List<Map<String, Object>> selectTasksByParams(Integer userId,String params) {
+        return taskBeanMapper.selectTasksByParams(userId,params);
+    }
+
+
+    @Override
+    public List<Map<String, Object>> selectTasks() {
+        return taskBeanMapper.selectTasks();
+    }
+
+    @Override
+    public List<Map<String, Object>> selectTasksBySelective(String params) {
+        return taskBeanMapper.selectTasksBySelective(params);
+    }
+
 }
