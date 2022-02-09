@@ -1,12 +1,9 @@
 package com.iclean.pt.yhgl.service.Imp;
 
-import com.iclean.pt.sbgl.bean.CleanReportBean;
 import com.iclean.pt.yhgl.bean.CustomerDeviceBean;
 import com.iclean.pt.yhgl.dao.CustomerDeviceBeanMapper;
 import com.iclean.pt.yhgl.service.CustomerDeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
