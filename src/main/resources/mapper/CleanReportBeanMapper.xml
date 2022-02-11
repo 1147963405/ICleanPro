@@ -43,7 +43,7 @@
     from (select
     *
     from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where  id=#{param1}))) r join
-     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id  order by  r.update_time desc
   </select>
 
 
@@ -53,7 +53,7 @@
     from (select
     *
     from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where  id=${userId}))) r join
-     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id ${cleanParams}
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id ${cleanParams}   order by  r.update_time desc
   </select>
 
 
@@ -64,7 +64,7 @@
     from (select
     *
     from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
-     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id  order by  r.update_time desc
   </select>
 
   <select id="selectCleanRportsBySelective" resultType="java.util.Map">
@@ -74,7 +74,7 @@
     from (select
     *
     from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
-     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id  ${cleanParams}
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id  ${cleanParams}  order by  r.update_time desc
   </select>
 
 

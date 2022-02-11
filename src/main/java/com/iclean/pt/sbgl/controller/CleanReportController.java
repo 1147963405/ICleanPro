@@ -1,10 +1,12 @@
 package com.iclean.pt.sbgl.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.iclean.pt.sbgl.bean.MapsBean;
 import com.iclean.pt.sbgl.bean.PathsBean;
+import com.iclean.pt.sbgl.bean.ReportJsonBean;
 import com.iclean.pt.sbgl.service.CleanReportService;
 import com.iclean.pt.sbgl.service.MapsService;
 import com.iclean.pt.sbgl.service.PathsService;
@@ -88,17 +90,27 @@ public class CleanReportController {
                 timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between "+jsonObj.get("beginTime")+" and  "+jsonObj.get("endTime"));
                 PageHelper.offsetPage(start_index, count);
                 cleanReportLst=cleanReportService.selectCleanRportsByParams(user_id,timeSql.toString());
-            }else {
-                PageHelper.offsetPage(start_index, count);
-                cleanReportLst=cleanReportService.selectCleanRportsByUserId(user_id);
-            }
-        }
+    }else {
+        PageHelper.offsetPage(start_index, count);
+        cleanReportLst=cleanReportService.selectCleanRportsByUserId(user_id);
+    }
+}
 
         for (Map<String,Object> m:cleanReportLst) {
             String map_path= Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + m.get("device_id") + "/" +  m.get("uuid")+ "/map.png";
+            //http://47.92.192.154:9077/iclean-cloud/data/download/report_path?device_id=209&file_name=7daa2cc5-c4c3-4d71-b8bd-534a2f897051
             JSONObject report = JSONObject.parseObject(m.get("report").toString());
+            ReportJsonBean reportJsonBean = BeanUtil.copyProperties(report, ReportJsonBean.class);
+            if(reportJsonBean.getPathFile()!=null){
+                String pathList=Constants.Global.MAP_DOWNLOAD_URL.getValue()+Constants.Global.REPORT_DOWNLOAD_PATH.getValue()+"?device_id="+m.get("device_id")+"&file_name="+reportJsonBean.getPathFile();
+                reportJsonBean.setPath_list(pathList);
+            }else {
+                reportJsonBean.setPathFile("");
+//                reportJsonBean.setPath_list("[]");
+            }
             m.put("map_path",map_path);
-            m.put("report",report);
+            m.put("report",reportJsonBean);
+//            logger.info("reportJsonBean:"+reportJsonBean);
         }
         long total = ((com.github.pagehelper.Page) cleanReportLst).getTotal();
         Map<String,Object> maps=new ConcurrentHashMap<>();

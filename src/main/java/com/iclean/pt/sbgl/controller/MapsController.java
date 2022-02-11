@@ -58,8 +58,8 @@ public class MapsController {
      * @description 获取地图列表
      **/
     @RequestMapping(value = "/map/lists",method = RequestMethod.POST)
-    public Result getMapsList( @RequestParam  Map mp) {
-//    public Result getMapsList( @RequestBody  Map mp) {
+//    public Result getMapsList( @RequestParam  Map mp) {
+    public Result getMapsList( @RequestBody  Map mp) {
         /*{"user_id":1,"start_index ":0,"count":10,"count_flag":true}:
         * {"user_id":1,"start_index":0,"robot_name":"南京国金中心1","count":100,"count_flag":true}
         * */

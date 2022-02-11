@@ -70,13 +70,21 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
                 PageHelper.offsetPage(startIndex, count);
                 alarmsList=alarmService.selectAlarmsBySelective(deviceNameSql.toString());
             }else if(jsonObj.get("status")!=null){
-                StringBuilder statusSql = new StringBuilder();
-                statusSql.append(" and r.status="+jsonObj.get("status"));
-                PageHelper.offsetPage(startIndex, count);
-                alarmsList=alarmService.selectAlarmsBySelective(statusSql.toString());
+                     if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
+                         StringBuilder timeSql = new StringBuilder();
+                         timeSql.append("  and r.status="+jsonObj.get("status") +"  and     FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                         PageHelper.offsetPage(startIndex, count);
+                         alarmsList=alarmService.selectAlarmsBySelective(timeSql.toString());
+                     }else {
+                         StringBuilder statusSql = new StringBuilder();
+                         statusSql.append(" and r.status="+jsonObj.get("status"));
+                         PageHelper.offsetPage(startIndex, count);
+                         alarmsList=alarmService.selectAlarmsBySelective(statusSql.toString());
+                     }
+
             }else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
                 StringBuilder timeSql = new StringBuilder();
-                timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                timeSql.append(" and     FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
                 PageHelper.offsetPage(startIndex, count);
                 alarmsList=alarmService.selectAlarmsBySelective(timeSql.toString());
             }else {
@@ -91,10 +99,19 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
                 PageHelper.offsetPage(startIndex, count);
                 alarmsList=alarmService.selectAlarmsByParams(userId,deviceNameSql.toString());
             }else if(jsonObj.get("status")!=null){
-                StringBuilder statusSql = new StringBuilder();
-                statusSql.append(" and r.status="+jsonObj.get("status"));
-                PageHelper.offsetPage(startIndex, count);
-                alarmsList=alarmService.selectAlarmsByParams(userId,statusSql.toString());
+
+                    if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
+                        StringBuilder timeSql = new StringBuilder();
+                        timeSql.append("  and r.status="+jsonObj.get("status") +" and     FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                        PageHelper.offsetPage(startIndex, count);
+                        alarmsList=alarmService.selectAlarmsByParams(userId,timeSql.toString());
+                    }else {
+                        StringBuilder statusSql = new StringBuilder();
+                        statusSql.append(" and r.status="+jsonObj.get("status"));
+                        PageHelper.offsetPage(startIndex, count);
+                        alarmsList=alarmService.selectAlarmsByParams(userId,statusSql.toString());
+                    }
+
             }else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
                 StringBuilder timeSql = new StringBuilder();
                 timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
@@ -121,7 +138,6 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
      **/
     @PostMapping(value = "/alarm/set_status")
     public Result  setStatus(@RequestParam Map<String,Object> alarmMap) {
-
 
         JSONObject jsonObj = commUtil.getJson(alarmMap);
         JSONArray jsonArray = new JSONArray().fromObject(jsonObj.get("ids"));

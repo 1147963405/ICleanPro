@@ -2,6 +2,7 @@ package com.iclean.pt.sbgl.controller;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.iclean.pt.common.config.Annotation.AnRateLimiter;
 import com.iclean.pt.sbgl.bean.CleanReportBean;
 import com.iclean.pt.sbgl.service.AlarmService;
 import com.iclean.pt.sbgl.service.CleanReportService;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 public class TestController {
@@ -45,6 +47,14 @@ public class TestController {
 
         return Result.ok().msg("");
     }
+
+
+    @GetMapping("/index")
+    @AnRateLimiter(permitsPerSecond = 100,timeout = 500, timeunit = TimeUnit.MILLISECONDS,msg = "亲,现在流量过大,请稍后再试.")
+    public String index() {
+        return System.currentTimeMillis() + "";
+    }
+
 
     public static void main(String[] args){
 

@@ -84,11 +84,15 @@ http://47.92.192.154:9077/iclean-cloud/data/download/map?device_id=22&uuid=af098
         GLOBAL_MAP_PATH("GLOBAL_MAP_PATH","/data/map"),
         MAP_DOWNLOAD_URL("MAP_DOWNLOAD_URL","http://47.92.192.154:9077"),
         MAP_DOWNLOAD_PATH("MAP_DOWNLOAD_PATH","/iclean-cloud/data/download/map"),
+        REPORT_DOWNLOAD_PATH("REPORT_DOWNLOAD_PATH","/iclean-cloud/data/download/report_path"),
         GLOBAL_LOGO_DIR("GLOBAL_LOGO_DIR","data/logo"),
         GLOBAL_HELPFILE_DIR("GLOBAL_HELPFILE_DIR","data/helpfile"),
         GLOBAL_HELP_DOC_DIR("GLOBAL_HELP_DOC_DIR","data/helpdoc"),
         GLOBAL_OTA_FILE_DIR("GLOBAL_OTA_FILE_DIR","data/ota_update"),
         GLOBAL_VEDIO_PROGRAM_DIR("GLOBAL_VEDIO_PROGRAM_DIR","data/vedioprogram");
+
+
+
         Global(String name,String value){
             this.value=value;
             this.name=name;
