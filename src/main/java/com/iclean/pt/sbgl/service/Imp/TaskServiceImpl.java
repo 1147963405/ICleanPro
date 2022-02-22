@@ -81,4 +81,9 @@ public class TaskServiceImpl implements TaskService {
         return taskBeanMapper.selectTasksBySelective(params);
     }
 
+    @Override
+    public List<Map<String, Object>> selectTaskByDeviceId(Integer deviceId) {
+        return taskBeanMapper.selectTaskByDeviceId(deviceId);
+    }
+
 }

@@ -72,7 +72,7 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
             }else if(jsonObj.get("status")!=null){
                      if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
                          StringBuilder timeSql = new StringBuilder();
-                         timeSql.append("  and r.status="+jsonObj.get("status") +"  and     FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                         timeSql.append("  and r.status="+jsonObj.get("status") +"  and     FROM_UNIXTIME(r.update_time, '%Y-%m-%d')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
                          PageHelper.offsetPage(startIndex, count);
                          alarmsList=alarmService.selectAlarmsBySelective(timeSql.toString());
                      }else {
@@ -84,7 +84,7 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
 
             }else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
                 StringBuilder timeSql = new StringBuilder();
-                timeSql.append(" and     FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                timeSql.append(" and     FROM_UNIXTIME(r.update_time, '%Y-%m-%d')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
                 PageHelper.offsetPage(startIndex, count);
                 alarmsList=alarmService.selectAlarmsBySelective(timeSql.toString());
             }else {
@@ -102,7 +102,7 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
 
                     if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
                         StringBuilder timeSql = new StringBuilder();
-                        timeSql.append("  and r.status="+jsonObj.get("status") +" and     FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                        timeSql.append("  and r.status="+jsonObj.get("status") +" and     FROM_UNIXTIME(r.update_time, '%Y-%m-%d')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
                         PageHelper.offsetPage(startIndex, count);
                         alarmsList=alarmService.selectAlarmsByParams(userId,timeSql.toString());
                     }else {
@@ -114,7 +114,7 @@ iclean/robot/status: 处理消息 {"data":"结束任务 [10], 地图[L5]","devic
 
             }else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
                 StringBuilder timeSql = new StringBuilder();
-                timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
                 PageHelper.offsetPage(startIndex, count);
                 alarmsList=alarmService.selectAlarmsByParams(userId,timeSql.toString());
             }else {

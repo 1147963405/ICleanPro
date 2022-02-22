@@ -29,4 +29,7 @@ public interface TaskBeanMapper {
     List<Map<String,Object>> selectTasks();
     List<Map<String,Object>> selectTasksBySelective(@Param("tasksParams") String params);
 
+    //out api
+    List<Map<String,Object>>  selectTaskByDeviceId(Integer deviceId);
+
 }

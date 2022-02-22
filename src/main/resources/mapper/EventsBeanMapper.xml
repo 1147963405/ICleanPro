@@ -32,6 +32,11 @@
     </where>
   </select>
 
+  <select id="selectEventByDeviceId" resultType="java.util.Map" parameterType="java.lang.Integer" >
+select e.id, d.name as device_name,e.context, e.type, e.status,FROM_UNIXTIME(e.update_time, '%Y-%m-%d %H:%i:%S') as update_time from tb_event e join
+ tb_device_info d on e.device_id=d.id WHERE e.device_id = #{deviceId,jdbcType=INTEGER}  order by e.update_time desc
+  </select>
+
 
   <select id="selectEventsByUserId" resultType="java.util.Map" >
 

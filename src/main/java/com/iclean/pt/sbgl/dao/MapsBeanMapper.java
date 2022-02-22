@@ -27,11 +27,14 @@ public interface MapsBeanMapper {
     List<MapsBean> selectByDeviceId(Integer deviceId, Integer startIndex, Integer count);
     List<MapsBean> selectByName(String name);
 
-
+//云平台 小程序
     List<Map<String,Object>> selectMapsByUserId(@Param("userId") Integer userId);
     List<Map<String,Object>> selectMapsByParams(@Param("userId") Integer userId, @Param("mapsParams") String params);
     List<Map<String,Object>> selectMaps();
     List<Map<String,Object>> selectMapsBySelective(@Param("mapsParams") String params);
+
+//out api
+    List<Map<String,Object>> selectMapByDeviceId(Integer deviceId);
 
 
 

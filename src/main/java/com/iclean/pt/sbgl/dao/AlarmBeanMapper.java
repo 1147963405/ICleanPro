@@ -23,9 +23,11 @@ public interface AlarmBeanMapper {
     int updateByPrimaryKey(AlarmBean record);
 
 
-
+//云平台 小程序
     List<Map<String,Object>> selectAlarmByUserId(@Param("userId") Integer userId);
     List<Map<String,Object>> selectAlarmsByParams(@Param("userId") Integer userId, @Param("alarmsParams") String params);
     List<Map<String,Object>> selectAlarms();
     List<Map<String,Object>> selectAlarmsBySelective(@Param("alarmsParams") String params);
+//out api
+    List<Map<String,Object>> selectAlarmByDeviceId(Integer deviceId);
 }

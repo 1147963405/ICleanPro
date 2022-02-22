@@ -40,5 +40,10 @@ public class EventsServiceImpl implements EventsService {
         return eventsBeanMapper.selectEventsBySelective(params);
     }
 
+    @Override
+    public List<Map<String, Object>> selectEventByDeviceId(Integer deviceId) {
+        return eventsBeanMapper.selectEventByDeviceId(deviceId);
+    }
+
 
 }

@@ -82,6 +82,20 @@
       cb.update_time
 </sql>
 
+  <select id="selectCustomerWithDevices" resultMap="BaseResultMap"    parameterType="java.lang.Integer">
+    select
+    <include refid="base"/>,
+    <include refid="deviceInfoColumn"/>,
+    <include refid="customerColumn"/>
+    from tb_customer_device cd
+   JOIN tb_customer cb on cb.id=cd.customer_id
+   join  tb_device_info d on d.id=cd.device_id
+    where
+    cd.customer_id=#{customerId,jdbcType=INTEGER}
+  </select>
+
+
+
   <select id="selectByDeviceId"  resultType="java.util.Map"  parameterType="java.lang.Integer">
     select
     cd.customer_id as id,cb.name

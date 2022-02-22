@@ -17,36 +17,9 @@ public class DeviceServiceImp  implements DeviceService {
     @Autowired
     private DeviceInfoBeanMapper deviceInfoBeanMapper;
 
-
-
     @Override
-    public List<DeviceInfoBean> selectBySelective(Integer typeId,Integer status,String name,String serial) {
-        return deviceInfoBeanMapper.selectBySelective(typeId,status,name,serial);
-    }
-
-    @Override
-    public List<DeviceInfoBean> selectSelective(String serial, Integer typeId, String status,String name) {
-        return deviceInfoBeanMapper.selectSelective(serial,typeId,status,name);
-    }
-
-    @Override
-    public DeviceInfoBean selectByPrimaryKey (Integer id) {
+    public Map<String, Object> selectByPrimaryKey (Integer id) {
         return deviceInfoBeanMapper.selectByPrimaryKey(id);
-    }
-
-    @Override
-    public DeviceInfoBean selectBySerialOrName(String serial, String name) {
-        return deviceInfoBeanMapper.selectBySerialOrName(serial,name);
-    }
-
-    @Override
-    public List<DeviceInfoBean> selectList() {
-        return deviceInfoBeanMapper.selectList();
-    }
-
-    @Override
-    public DeviceInfoBean selectByIdOrName(Integer id, String name) {
-        return deviceInfoBeanMapper.selectByIdOrName(id,name);
     }
 
     @Override
@@ -82,6 +55,11 @@ public class DeviceServiceImp  implements DeviceService {
     @Override
     public List<Map<String, Object>> selectDevicesBySelective(String params) {
         return deviceInfoBeanMapper.selectDevicesBySelective(params);
+    }
+
+    @Override
+    public DeviceInfoBean selectBySelective(String params) {
+        return deviceInfoBeanMapper.selectBySelective(params);
     }
 
 

@@ -23,4 +23,5 @@ public interface MapsService {
     List<Map<String,Object>> selectMapsByParams(@Param("userId") Integer userId,@Param("mapsParams") String params);
     List<Map<String,Object>> selectMaps();
     List<Map<String,Object>> selectMapsBySelective(@Param("mapsParams") String params);
+    List<Map<String,Object>> selectMapByDeviceId(Integer deviceId);
 }

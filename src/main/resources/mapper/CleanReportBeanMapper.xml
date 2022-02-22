@@ -37,6 +37,13 @@
   </select>
 
 
+  <select id="selectClearReportByDeviceId"  resultType="java.util.Map" parameterType="java.lang.Integer" >
+  select c.id, c.map_id,m.name as map_name,m.uuid as map_path, c.device_id,d.name as device_name,d.serial as device_serial,d.type_id as device_type_id, c.name, c.clean_area, c.use_time, c.type, c.report, FROM_UNIXTIME(c.update_time, '%Y-%m-%d %H:%i:%S') as update_time from tb_clean_report c
+  left join tb_device_info d on c.device_id=d.id
+  left join tb_maps m on c.map_id=m.id  where c.device_id = #{deviceId,jdbcType=INTEGER} order by c.update_time desc
+  </select>
+
+
   <select id="selectCleanRportsByUserId" resultType="java.util.Map">
     select
     r.id,r.map_id,r.device_id,r.name,r.clean_area,r.use_time,r.`type`,r.report,FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S') as update_time,m.uuid,m.name as  map_name,t.name as  device_name,t.serial as device_serial,t.type_id as  device_type_id
@@ -53,7 +60,7 @@
     from (select
     *
     from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where  id=${userId}))) r join
-     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id ${cleanParams}   order by  r.update_time desc
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id   ${cleanParams}   order by  r.update_time desc
   </select>
 
 
@@ -64,7 +71,7 @@
     from (select
     *
     from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
-     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id  order by  r.update_time desc
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id   order by  r.update_time desc
   </select>
 
   <select id="selectCleanRportsBySelective" resultType="java.util.Map">
@@ -74,7 +81,7 @@
     from (select
     *
     from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
-     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id  ${cleanParams}  order by  r.update_time desc
+     tb_device_info t on r.device_id=t.id  join tb_maps m on r.map_id=m.id   ${cleanParams}  order by  r.update_time desc
   </select>
 
 

@@ -38,16 +38,23 @@
 
   <select id="selectBySelective" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
     select
-    <include refid="Base_Column_List" />
+    id, uuid, context, level, device_id, status,FROM_UNIXTIME(update_time, '%Y-%m-%d %H:%i:%S') as update_time, FROM_UNIXTIME(start_time, '%Y-%m-%d %H:%i:%S') as start_time
     from tb_alarm
    <where>
      <if test="count==0 ">
-       device_id = #{deviceId,jdbcType=INTEGER} and status= #{status,jdbcType=INTEGER}
+       device_id = #{deviceId,jdbcType=INTEGER} and status= #{status,jdbcType=INTEGER} order by  update_time desc
      </if>
      <if test="count!=0">
-       device_id = #{deviceId,jdbcType=INTEGER} and status= #{status,jdbcType=INTEGER} LIMIT #{startIndex},#{count}
+       device_id = #{deviceId,jdbcType=INTEGER} and status= #{status,jdbcType=INTEGER} LIMIT #{startIndex},#{count} order by  update_time desc
      </if>
    </where>
+  </select>
+
+  <select id="selectAlarmByDeviceId" resultType="java.util.Map" parameterType="java.lang.Integer" >
+select a.id,a.device_id,d.name as device_name,a.context, a.status,FROM_UNIXTIME(a.update_time, '%Y-%m-%d %H:%i:%S') as update_time, FROM_UNIXTIME(a.start_time, '%Y-%m-%d %H:%i:%S') as start_time from tb_alarm  a
+join tb_device_info d on a.device_id=d.id
+
+WHERE a.device_id = #{deviceId,jdbcType=INTEGER}  order by a.update_time desc
   </select>
 
 

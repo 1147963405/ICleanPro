@@ -59,4 +59,9 @@ public class CleanReportServiceImpl implements CleanReportService {
     public List<Map<String, Object>> selectCleanRportsTotalByCustomerId(Integer customerId) {
         return cleanReportBeanMapper.selectCleanRportsTotalByCustomerId(customerId);
     }
+
+    @Override
+    public List<Map<String, Object>> selectClearReportByDeviceId(Integer deviceId) {
+        return cleanReportBeanMapper.selectClearReportByDeviceId(deviceId);
+    }
 }

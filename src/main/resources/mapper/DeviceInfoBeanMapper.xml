@@ -19,7 +19,7 @@
     id, name, serial, address, type_id, status, models, scene, module_info, last_located_address, 
     description, update_time
   </sql>
-  <select id="selectBySelective" resultMap="BaseResultMap"  >
+  <!--<select id="selectBySelective" resultMap="BaseResultMap"  >
     select 
     <include refid="Base_Column_List" />
     from tb_device_info
@@ -44,9 +44,9 @@
       </trim>
     </where>
     order by  status desc
-  </select>
+  </select>-->
 
-  <select id="selectSelective" resultMap="BaseResultMap"  >
+  <!--<select id="selectSelective" resultMap="BaseResultMap"  >
     select
     <include refid="Base_Column_List" />
     from tb_device_info
@@ -67,19 +67,13 @@
       </trim>
     </where>
     order by  status desc
-  </select>
+  </select>-->
 
   <select id="selectList" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
     select
     <include refid="Base_Column_List" />
     from tb_device_info where  1=1  order by  status desc
   </select>
-  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
-  select
-  <include refid="Base_Column_List" />
-  from tb_device_info
-  where id=#{id,jdbcType=INTEGER} order by  status desc
-</select>
   <select id="selectBySerialOrName" resultMap="BaseResultMap" parameterType="java.lang.Integer">
     select
     <include refid="Base_Column_List" />
@@ -107,6 +101,18 @@
         and  name=#{name,jdbcType=VARCHAR}
       </if>
     </where>
+  </select>
+
+  <select id="selectByPrimaryKey" resultType="java.util.Map" parameterType="java.lang.Integer">
+    select d.id as device_id,d.name,d.serial,d.address,d.type_id,d.`status`,d.models,d.scene,d.module_info,d.last_located_address,d.description,FROM_UNIXTIME(d.update_time, '%Y-%m-%d %H:%i:%S') as update_time,dt.`type` as device_type from tb_device_info d
+    join tb_device_type dt on d.type_id=dt.id where d.id=#{id,jdbcType=INTEGER} order by  status desc
+  </select>
+
+
+  <select id="selectBySelective" resultMap="BaseResultMap" parameterType="java.lang.Integer"  >
+    select
+    <include refid="Base_Column_List" />
+    from tb_device_info where  ${params}
   </select>
 
 

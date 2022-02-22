@@ -17,9 +17,12 @@ public interface TaskService {
     Future<List<TaskBean>> ayncSelective(Integer deviceId, Integer startIndex, Integer count);
     List<TaskBean> selectList(Integer startIndex,Integer count);
 
+    //小程序  云平台
     List<Map<String,Object>> selectTasksByUserId(@Param("userId") Integer userId);
-//    List<Map<String,Object>> selectTasksByParams(@Param("params") String params);
     List<Map<String,Object>> selectTasksByParams(@Param("userId") Integer userId,@Param("params") String params);
     List<Map<String,Object>> selectTasks();//selectTasksByName
     List<Map<String,Object>> selectTasksBySelective(@Param("params") String params);
+
+    //out api
+    List<Map<String,Object>>  selectTaskByDeviceId(Integer deviceId);
 }

@@ -20,11 +20,13 @@ public interface CleanReportBeanMapper {
     List<CleanReportBean> selectSelective(Integer deviceId, Integer startIndex, Integer count);
     int updateByPrimaryKeySelective(CleanReportBean record);
     int updateByPrimaryKey(CleanReportBean record);
-
+//云平台 小程序
     List<Map<String,Object>> selectCleanRportsByUserId(@Param("userId") Integer userId);
     List<Map<String,Object>> selectCleanRportsByParams(@Param("userId") Integer userId, @Param("cleanParams") String cleanParams);
     List<Map<String,Object>> selectCleanRports();
     List<Map<String,Object>> selectCleanRportsBySelective(@Param("cleanParams") String cleanParams);//selectCleanRportsTotal
     List<Map<String,Object>> selectCleanRportsTotal();
     List<Map<String,Object>> selectCleanRportsTotalByCustomerId(@Param("customerId") Integer customerId);
+//out api
+    List<Map<String,Object>> selectClearReportByDeviceId(Integer deviceId);
 }

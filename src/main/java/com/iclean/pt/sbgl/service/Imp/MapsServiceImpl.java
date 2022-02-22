@@ -65,5 +65,10 @@ public class MapsServiceImpl implements MapsService {
         return mapsBeanMapper.selectMapsBySelective(params);
     }
 
+    @Override
+    public List<Map<String, Object>> selectMapByDeviceId(Integer deviceId) {
+        return mapsBeanMapper.selectMapByDeviceId(deviceId);
+    }
+
 
 }

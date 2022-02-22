@@ -3303,7 +3303,7 @@ instanceKlass com/iclean/pt/yhgl/service/CustomerGroupService
 instanceKlass com/iclean/pt/yhgl/service/Imp/CustomerDeviceServiceImp
 instanceKlass com/iclean/pt/yhgl/service/CustomerDeviceService
 instanceKlass com/iclean/pt/yhgl/controller/UserController
-instanceKlass com/iclean/pt/yhgl/controller/GetTokenController
+instanceKlass com/iclean/pt/yhgl/controller/GetcrashDateController
 instanceKlass com/iclean/pt/sbgl/service/Imp/PathsServiceImp
 instanceKlass com/iclean/pt/sbgl/service/PathsService
 instanceKlass com/iclean/pt/sbgl/controller/DeviceController

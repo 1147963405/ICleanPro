@@ -4,6 +4,7 @@ import com.iclean.pt.yhgl.bean.CustomerBean;
 import com.iclean.pt.yhgl.bean.CustomerGroupBean;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CustomerService {
 
@@ -19,6 +20,7 @@ public interface CustomerService {
     List<CustomerBean> selectBySelective(Integer customerGroupId,Integer customerId);
     int selectCustomer(Integer userId);
     int selectCustomerByPrimaryKey(Integer customerId);
+    List<Map<String,Object>> selectCusDevices(Integer customerId);
 
 
 

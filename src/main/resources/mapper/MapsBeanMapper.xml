@@ -56,10 +56,21 @@
   </select>
 
 
+
+
+ <select id="selectMapByDeviceId" resultType="java.util.Map" parameterType="java.lang.Integer" >
+  select m.id as map_id,m.device_id,m.name as map_name,m.uuid as path,d.name as device_name from  tb_maps m
+ join tb_device_info d on m.device_id=d.id where m.device_id=#{deviceId,jdbcType=INTEGER}
+  </select>
+
+
+
+
+
   <select id="selectMapsByUserId" resultType="java.util.Map" >
 
    select
-    r.id as map_id,r.device_id,r.name as map_name,r.uuid,t.name as  device_name
+    r.id as map_id,r.device_id,r.name as map_name,r.uuid as path,t.name as  device_name
     from (select
     *
     from tb_maps where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where id=#{userId}))) r join
@@ -69,7 +80,7 @@
   <select id="selectMapsByParams" resultType="java.util.Map" >
 
    select
-    r.id as map_id,r.device_id,r.name as map_name,r.uuid,t.name as  device_name
+    r.id as map_id,r.device_id,r.name as map_name,r.uuid as path,t.name as  device_name
     from (select
     *
     from tb_maps where device_id in (select device_id from tb_customer_device where customer_id in(select customer_id from tb_user where id=${userId}))) r join
@@ -79,7 +90,7 @@
   <select id="selectMaps" resultType="java.util.Map" >
 
      select
-    r.id as map_id,r.device_id,r.name as map_name,r.uuid,t.name as  device_name
+    r.id as map_id,r.device_id,r.name as map_name,r.uuid as path,t.name as  device_name
     from (select
     *
     from tb_maps where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join
@@ -90,7 +101,7 @@
   <select id="selectMapsBySelective" resultType="java.util.Map" >
 
      select
-    r.id as map_id,r.device_id,r.name as map_name,r.uuid,t.name as  device_name
+    r.id as map_id,r.device_id,r.name as map_name,r.uuid as path,t.name as  device_name
     from (select
     *
     from tb_maps where device_id in (select device_id from tb_customer_device where customer_id in(select id from tb_customer))) r join

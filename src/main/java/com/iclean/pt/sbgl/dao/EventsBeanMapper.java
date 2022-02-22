@@ -21,9 +21,12 @@ public interface EventsBeanMapper {
 
     int updateByPrimaryKey(EventsBean record);
 
-
+//云平台 小程序
     List<Map<String,Object>> selectEventsByUserId(@Param("userId") Integer userId);
     List<Map<String,Object>> selectEventsByParams(@Param("userId") Integer userId, @Param("eventsParams") String params);
     List<Map<String,Object>> selectEvents();
     List<Map<String,Object>> selectEventsBySelective(@Param("eventsParams") String params);
+
+//out api
+List<Map<String,Object>> selectEventByDeviceId(Integer deviceId);
 }

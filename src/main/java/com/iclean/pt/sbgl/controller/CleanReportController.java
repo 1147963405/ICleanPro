@@ -72,7 +72,7 @@ public class CleanReportController {
                 cleanReportLst=cleanReportService.selectCleanRportsBySelective(deviceNameSql.toString());
             }else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
                 StringBuilder timeSql = new StringBuilder();
-                timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
                 PageHelper.offsetPage(start_index, count);
                 cleanReportLst=cleanReportService.selectCleanRportsBySelective(timeSql.toString());
             }else {
@@ -85,9 +85,9 @@ public class CleanReportController {
                 deviceNameSql.append(" and  t.name like '%"+jsonObj.get("device_name")+"%'");
                 PageHelper.offsetPage(start_index, count);
                 cleanReportLst=cleanReportService.selectCleanRportsByParams(user_id,deviceNameSql.toString());
-            }else if(jsonObj.get("beginTime")!=null || jsonObj.get("endTime")!=null){
+            }else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
                 StringBuilder timeSql = new StringBuilder();
-                timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between "+jsonObj.get("beginTime")+" and  "+jsonObj.get("endTime"));
+                timeSql.append("  and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
                 PageHelper.offsetPage(start_index, count);
                 cleanReportLst=cleanReportService.selectCleanRportsByParams(user_id,timeSql.toString());
     }else {
@@ -97,12 +97,12 @@ public class CleanReportController {
 }
 
         for (Map<String,Object> m:cleanReportLst) {
-            String map_path= Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + m.get("device_id") + "/" +  m.get("uuid")+ "/map.png";
+            String map_path= Constants.Global.IMAGES_URL.getValue()  + "/" + m.get("device_id") + "/" +  m.get("uuid")+ "/map.png";
             //http://47.92.192.154:9077/iclean-cloud/data/download/report_path?device_id=209&file_name=7daa2cc5-c4c3-4d71-b8bd-534a2f897051
             JSONObject report = JSONObject.parseObject(m.get("report").toString());
             ReportJsonBean reportJsonBean = BeanUtil.copyProperties(report, ReportJsonBean.class);
             if(reportJsonBean.getPathFile()!=null){
-                String pathList=Constants.Global.MAP_DOWNLOAD_URL.getValue()+Constants.Global.REPORT_DOWNLOAD_PATH.getValue()+"?device_id="+m.get("device_id")+"&file_name="+reportJsonBean.getPathFile();
+                String pathList=Constants.Global.IMAGES_URL.getValue()+"?device_id="+m.get("device_id")+"&file_name="+reportJsonBean.getPathFile();
                 reportJsonBean.setPath_list(pathList);
             }else {
                 reportJsonBean.setPathFile("");

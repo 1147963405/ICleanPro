@@ -50,5 +50,10 @@ public class AlarmServiceImpl implements AlarmService {
         return alarmBeanMapper.selectAlarmsBySelective(params);
     }
 
+    @Override
+    public List<Map<String, Object>> selectAlarmByDeviceId(Integer deviceId) {
+        return alarmBeanMapper.selectAlarmByDeviceId(deviceId);
+    }
+
 
 }

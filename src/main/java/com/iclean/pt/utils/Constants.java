@@ -19,7 +19,7 @@ public class Constants {
         TOPIC_PUB_ROBOT_VEDIO_MSG("TOPIC_PUB_ROBOT_VEDIO_MSG","iclean/cloud/vedio"),
 
         /*Subscribe  订阅主题*/
-        CONSUMER_CLIENTID("CONSUMER_CLIENTID","mqttConsumer"),//
+        CONSUMER_CLIENTID("CONSUMER_CLIENTID","mqttConsumer"),
         //机器的状态信息，如上线，下线，空闲，作务，急停等状态变化时
         TOPIC_SUB_ROBOT_STATUS("TOPIC_SUB_ROBOT_STATUS","iclean/robot/status"),
         //普通的上传信息，如传感器，位置，任务信息上报
@@ -83,6 +83,7 @@ http://47.92.192.154:9077/iclean-cloud/data/download/map?device_id=22&uuid=af098
         GLOBAL_STATIC_URL("GLOBAL_STATIC_URL","http://47.92.192.154:9993"),
         GLOBAL_MAP_PATH("GLOBAL_MAP_PATH","/data/map"),
         MAP_DOWNLOAD_URL("MAP_DOWNLOAD_URL","http://47.92.192.154:9077"),
+        IMAGES_URL("MAP_DOWNLOAD_URL","https://iclean.aike1860.com"),
         MAP_DOWNLOAD_PATH("MAP_DOWNLOAD_PATH","/iclean-cloud/data/download/map"),
         REPORT_DOWNLOAD_PATH("REPORT_DOWNLOAD_PATH","/iclean-cloud/data/download/report_path"),
         GLOBAL_LOGO_DIR("GLOBAL_LOGO_DIR","data/logo"),

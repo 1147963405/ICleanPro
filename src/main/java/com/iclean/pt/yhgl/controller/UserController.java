@@ -1,6 +1,7 @@
 package com.iclean.pt.yhgl.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -15,7 +16,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
-
+import java.util.concurrent.ConcurrentHashMap;
 
 
 @RestController
@@ -625,11 +626,11 @@ public class UserController {
     public Result getUserList(int id) {
 
         /*
-        * 步骤：
-        * 1.通过中间表获取到客户信息、设备信息,客户与设备关系是一对多关系：即customer--list<device>
-        * 2.通过订单表中的客户id关联对应的客户，客户与订单是一对多关联：即customer--list<order>
-        * 3.获取到客户详情信息后，通过一个map封装
-        * */
+         * 步骤：
+         * 1.通过中间表获取到客户信息、设备信息,客户与设备关系是一对多关系：即customer--list<device>
+         * 2.通过订单表中的客户id关联对应的客户，客户与订单是一对多关联：即customer--list<order>
+         * 3.获取到客户详情信息后，通过一个map封装
+         * */
 
 //        System.out.println("customerDeviceBeans:"+customerDeviceBeans);
         Map<String,Object>  customer=new HashMap<>();
@@ -638,23 +639,24 @@ public class UserController {
         List lstD=new ArrayList();
         List lstO=new ArrayList();
         /*获取DeviceInfoBean类中指定参数*/
-        List<DeviceInfoBean> deviceInfoBeans =new ArrayList<>();
-        DeviceInfoBean deviceInfoBean =null;
+        List<Map<String,Object>> deviceInfoBeans =new ArrayList<>();
+        Map<String,Object> deviceInfoBean =null;
         /*1.获取中间表信息*/
         List<CustomerDeviceBean> customerDeviceBeans = customerDeviceService.selectCustomerWithDevices(id);
         /*1-1.遍历中间表提取出设备信息列表*/
-        for (int i=0;i<customerDeviceBeans.size();i++){
+//        for (int i=0;i<customerDeviceBeans.size();i++){
+        for (CustomerDeviceBean cdb:customerDeviceBeans) {
             /*1-2.获取设备列表*/
-            deviceInfoBean = deviceService.selectByPrimaryKey(customerDeviceBeans.get(i).getDeviceId());
+            deviceInfoBean = deviceService.selectByPrimaryKey(cdb.getDeviceId());
             deviceInfoBeans.add(deviceInfoBean);
         }
 
         List<DeviceInfoCopyBean> deviceCopyBeans=new ArrayList<>();
         for (int i=0;i<deviceInfoBeans.size();i++) {
-             deviceInfoBean = deviceInfoBeans.get(i);
+            deviceInfoBean= deviceInfoBeans.get(i);
             DeviceInfoCopyBean deviceInfoCopyBean=new DeviceInfoCopyBean();
-            deviceInfoCopyBean.setName(deviceInfoBean.getName());
-            deviceInfoCopyBean.setId(deviceInfoBean.getId());
+            deviceInfoCopyBean.setName(deviceInfoBean.get("name").toString());
+            deviceInfoCopyBean.setId(Integer.parseInt(deviceInfoBean.get("device_id").toString()));
             deviceCopyBeans.add(deviceInfoCopyBean);
         }
 //        System.out.println("deviceInfoBeans:"+deviceInfoBeans.toString());

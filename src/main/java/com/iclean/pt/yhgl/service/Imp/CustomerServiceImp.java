@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CustomerServiceImp implements CustomerService {
@@ -50,6 +51,11 @@ public class CustomerServiceImp implements CustomerService {
     @Override
     public int selectCustomerByPrimaryKey(Integer customerId) {
         return customerBeanMapper.selectCustomerByPrimaryKey(customerId);
+    }
+
+    @Override
+    public List<Map<String, Object>> selectCusDevices(Integer customerId) {
+        return customerBeanMapper.selectCusDevices(customerId);
     }
 
 

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DeviceTypeImp implements DeviceTypeService {
@@ -15,13 +16,14 @@ public class DeviceTypeImp implements DeviceTypeService {
     @Autowired
     private DeviceTypeBeanMapper deviceTypeBeanMapper;
 
-    @Override
-    public List<DeviceTypeBean> selectList(Integer id) {
-        return deviceTypeBeanMapper.selectList(id);
-    }
 
     @Override
     public DeviceTypeBean selectByPrimaryKey(Integer id) {
         return deviceTypeBeanMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public List<Map<String, Object>> selectDeviceTypeList() {
+        return deviceTypeBeanMapper.selectDeviceTypeList();
     }
 }

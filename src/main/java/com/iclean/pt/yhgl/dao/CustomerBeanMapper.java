@@ -5,6 +5,7 @@ import com.iclean.pt.yhgl.bean.CustomerGroupBean;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface CustomerBeanMapper {
@@ -20,4 +21,6 @@ public interface CustomerBeanMapper {
     int updateByPrimaryKey(CustomerBean record);
     int selectCustomer(Integer userId);
     int selectCustomerByPrimaryKey(Integer customerId);
+
+    List<Map<String,Object>> selectCusDevices(Integer customerId);
 }

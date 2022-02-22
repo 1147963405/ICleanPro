@@ -2,6 +2,7 @@ package com.iclean.pt.sbgl.controller;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.google.common.base.Strings;
 import com.iclean.pt.common.config.Annotation.AnRateLimiter;
 import com.iclean.pt.sbgl.bean.CleanReportBean;
 import com.iclean.pt.sbgl.service.AlarmService;
@@ -19,6 +20,10 @@ import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -56,10 +61,25 @@ public class TestController {
     }
 
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException{
 
-        Object o="[{\"ver_number\":46,\"type\":0,\"name\":\"2.0.2(2021.11.30_16:00)_029\"},{\"ver_number\":2,\"type\":2,\"name\":\"2.4.0(2021-11-12)\"}]";
-        JSONArray jsonArray = JSONArray.fromObject(o);
-        System.out.println("j"+jsonArray);
+        File file = new File("http://47.92.192.154:9077/home/apiServer/Hello1.txt");
+        // 创建文件
+        file.createNewFile();
+        // creates a FileWriter Object
+        FileWriter writer = new FileWriter(file);
+        // 向文件写入内容
+        writer.write("This\n is\n an\n example\n");
+        writer.flush();
+        writer.close();
+        // 创建 FileReader 对象
+        FileReader fr = new FileReader(file);
+        char[] a = new char[50];
+        fr.read(a); // 从数组中读取内容
+        for (char c : a) {
+            System.out.print(c); // 一个个打印字符
+        }
+        fr.close();
+        }
     }
-}
+

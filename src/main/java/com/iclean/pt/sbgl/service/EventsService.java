@@ -14,4 +14,5 @@ public interface EventsService {
     List<Map<String,Object>> selectEventsByParams(@Param("userId") Integer userId,@Param("params") String params);
     List<Map<String,Object>> selectEvents();
     List<Map<String,Object>> selectEventsBySelective(@Param("params") String params);
+    List<Map<String,Object>> selectEventByDeviceId(Integer deviceId);
 }

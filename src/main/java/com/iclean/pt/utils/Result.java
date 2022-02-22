@@ -1,6 +1,7 @@
 package com.iclean.pt.utils;
 
 import lombok.Data;
+import net.sf.json.JSONArray;
 import org.apache.http.HttpStatus;
 
 import java.util.ArrayList;
@@ -157,7 +158,6 @@ public class Result<T> {
         this.data.put(key, value);
         return this;
     }
-
 
 }
 

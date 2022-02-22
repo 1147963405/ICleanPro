@@ -30,8 +30,7 @@ import static java.lang.Integer.parseInt;
 public class DeviceController {
 
     private final static Logger logger = LoggerFactory.getLogger(DeviceController.class);
-//    @Autowired
-//    private CustomerDeviceService customerDeviceService;
+
     @Autowired
     private DeviceService deviceService;
     @Autowired
@@ -64,7 +63,6 @@ public class DeviceController {
 /*{"type_id":1,"name":"iclean","serial":"2106-004-01-00089",
 "address":"广东省广州市番禺区石楼","description":"无无无",
 "scene":"机场","customer_ids":[{"id":77}]}:  */
-
         /*
          * 步骤：
          *      1.获取前台的传参进行设备添加
@@ -87,7 +85,8 @@ public class DeviceController {
         if(count<=0){
             return Result.ok().msg("该设备添加失败");
         }
-         DeviceInfoBean dib = deviceService.selectBySerialOrName(String.valueOf( dm.get("serial")), "");
+        StringBuilder stringBuilder =new StringBuilder().append("  serial= '" + dm.get("serial")+"'");
+         DeviceInfoBean dib = deviceService.selectBySelective(stringBuilder.toString());
      /*2把该设备对应的客户添加到中间表*/
         CustomerDeviceBean customerDeviceBean=new CustomerDeviceBean();
 //        String customer_ids = dm.get("customer_ids").toString();
@@ -147,14 +146,15 @@ public class DeviceController {
         JSONObject deviceMap = commUtil.getJson(updateDevice);
         //当前时间
         long time = new Date().getTime();
-        DeviceInfoBean dib = deviceService.selectByPrimaryKey((Integer) deviceMap.get("id"));
-        dib.setTypeId((Integer) deviceMap.get("type_id"));
-        dib.setName((String) deviceMap.get("name"));
-        dib.setSerial((String) deviceMap.get("serial"));
-        dib.setAddress((String) deviceMap.get("address"));
-        dib.setDescription((String) deviceMap.get("description"));
-        dib.setUpdateTime(time);
-        int count = deviceService.updateByPrimaryKey(dib);
+        Map<String,Object> dib = deviceService.selectByPrimaryKey(Integer.parseInt(deviceMap.get("id").toString()));
+        dib.put("type_id",deviceMap.get("type_id"));
+        dib.put("name", deviceMap.get("name"));
+        dib.put("serial",deviceMap.get("serial"));
+        dib.put("address", deviceMap.get("address"));
+        dib.put("description",deviceMap.get("description"));
+        dib.put("update_time",time);
+        DeviceInfoBean deviceInfoBean = BeanUtil.copyProperties(dib, DeviceInfoBean.class);
+        int count = deviceService.updateByPrimaryKey(deviceInfoBean);
         if(count<0){
             return Result.error().msg("更新设备失败");
         }
@@ -168,21 +168,9 @@ public class DeviceController {
      **/
     @RequestMapping(value = "/device/lists_type", method = RequestMethod.GET)
     public JSONObject getDeviceTypeList() {
-        List deviceList=new ArrayList();
-        List<DeviceTypeBean> deviceTypeBeans = deviceTypeService.selectList(null);
-        if(deviceTypeBeans.size()<=0){
-            return null;
-        }
-        for (DeviceTypeBean dib:deviceTypeBeans) {
-            Map<String,Object> deviceMap=new HashMap<>();
-            deviceMap.put("name",dib.getName());
-            deviceMap.put("description",dib.getDescription());
-            deviceMap.put("id",dib.getId());
-            deviceMap.put("type",dib.getType());
-            deviceList.add(deviceMap);
-        }
-        JSONArray jsonArray = new JSONArray().fromObject(deviceList);
-       String jStr="{ successed: true,errorCode: 200, msg: '', data:"+ jsonArray+"}";
+        List<Map<String, Object>> deviceTypeList = deviceTypeService.selectDeviceTypeList();
+        JSONArray jsonArray = new JSONArray().fromObject(deviceTypeList);
+        String jStr="{ successed: true,errorCode: 200, msg: '', data:"+ jsonArray+"}";
         return JSONObject.parseObject(jStr);
     }
 
@@ -222,7 +210,7 @@ public class DeviceController {
                         customerList=deviceService.selectDevicesBySelective(statusSql.toString());
                     }else if(jsonObject.get("serial")!=null){
                         StringBuilder statusSql = new StringBuilder();
-                        statusSql.append(" and r.serial="+jsonObject.get("serial"));
+                        statusSql.append(" and r.serial like '%"+jsonObject.get("serial")+"%'");
                         PageHelper.offsetPage(start_index, count);
                         customerList=deviceService.selectDevicesBySelective(statusSql.toString());
                     }else if(jsonObject.get("name")!=null){
@@ -248,7 +236,7 @@ public class DeviceController {
                     customerList = deviceService.selectDevicesByParams(customerId, statusSql.toString());
                 }else if (jsonObject.get("serial") != null) {
                     StringBuilder statusSql = new StringBuilder();
-                    statusSql.append(" and r.serial=" + jsonObject.get("serial"));
+                    statusSql.append(" and r.serial like '%"+jsonObject.get("serial")+"%'");
                     PageHelper.offsetPage(start_index, count);
                     customerList = deviceService.selectDevicesByParams(customerId, statusSql.toString());
                 }else if (jsonObject.get("name") != null) {
@@ -280,7 +268,7 @@ public class DeviceController {
                 //maps
                 MapsBean mapsBean = mapsService.selectBySelective(Integer.parseInt(map.get("id").toString()), String.valueOf(sta.get("curr_map")));
                 if(mapsBean!=null){
-                    String path = Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
+                    String path = Constants.Global.IMAGES_URL.getValue()+ "/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
                     map.put("curr_map_id",mapsBean.getId());
                     map.put("curr_map_name",mapsBean.getName());
                     map.put("curr_map",path);
@@ -323,32 +311,26 @@ public class DeviceController {
          * 2.通过设备type_id获取设备类型
          * 3.通过map封装
          * */
-        Map<String,Object> dp=new HashMap<>();
         /*1.通过device_id获取到指定设备信息，以及设备实时数据，还有地图名称*/
-        DeviceInfoBean deviceInfoBean = deviceService.selectByPrimaryKey(id);
+        Map<String,Object> deviceInfoBean = deviceService.selectByPrimaryKey(id);
         if(deviceInfoBean==null){
             return Result.ok().msg("the device_id is not exist!");
         }
-        dp.put("device_id",id);
         JSONObject jsonObject = JSONObject.parseObject(String.valueOf(redisUtil.hget("message", String.valueOf(id))));
         logger.info("jsonObject"+jsonObject);
         if(jsonObject==null){
             return Result.error().msg("the device_id is not exist!");
         }
-                Object task = jsonObject.get("task");//获取task外层
-                JSONObject sta = JSONObject.parseObject(task.toString());//获取task里层
-                dp.put("motion_state",jsonObject.get("motion"));
-                dp.put("task_state",task);
-                dp.put("sonser_state",jsonObject.get("sonser"));
-                dp.put("map_name",sta.get("curr_map"));
+        Object task = jsonObject.get("task");//获取task外层
+        JSONObject sta = JSONObject.parseObject(task.toString());//获取task里层
 
-        /*2.通过设备type_id获取设备类型*/
-        DeviceTypeBean deviceTypeBean = deviceTypeService.selectByPrimaryKey(deviceInfoBean.getTypeId());
-        if(deviceTypeBean==null){
-            return Result.ok().msg("该设备不存在设备类型");
-        }
-        dp.put("device_type",deviceTypeBean.getType());
-
+        Map<String,Object> dp=new ConcurrentHashMap<>();
+        dp.put("motion_state",jsonObject.get("motion"));
+        dp.put("task_state",task);
+        dp.put("sonser_state",jsonObject.get("sonser"));
+        dp.put("map_name",sta.get("curr_map"));
+        dp.put("device_id",deviceInfoBean.get("device_id"));
+        dp.put("device_type",deviceInfoBean.get("device_type"));
         return Result.ok().data(dp).msg("");
 
     }
@@ -394,63 +376,63 @@ public class DeviceController {
          * 4.通过设备id到设备客户中间表中获取到指定的客户集合
          * 5.通过map封装
          * */
-
-//System.out.println("id: "+id);
-        /*1*/
+        logger.info("获取设备基本信息");
         Map<String,Object> dp=new HashMap<>();
-        DeviceInfoBean deviceInfoBean = deviceService.selectByPrimaryKey(id);
+        Map<String,Object> deviceInfoBean = deviceService.selectByPrimaryKey(id);
         if(deviceInfoBean==null){
-            return Result.ok().msg("设备为空");
+            return Result.error().msg("the device_id is not exist!");
         }
-        /*2*/
-            /*通过device_id对比数据库中的设备与线上的设备，并回显的数据为device_id相同的线上设备信息*/
-//            if (deviceInfoBean.getId().equals(km) || deviceInfoBean.getId()==km) {
+            //customer
+            List<CustomerDeviceBean> customerDeviceBeans = customerDeviceService.selectByDeviceId(Integer.parseInt(deviceInfoBean.get("device_id").toString()));
+            dp.put("customers", customerDeviceBeans);
+            //device
+            dp.put("id", deviceInfoBean.get("device_id"));
+            dp.put("type_id", deviceInfoBean.get("type_id"));
+            dp.put("serial", deviceInfoBean.get("serial"));
+            dp.put("status", deviceInfoBean.get("status"));
+            dp.put("name", deviceInfoBean.get("name"));
+            dp.put("scene", deviceInfoBean.get("scene"));
+            dp.put("models", deviceInfoBean.get("models"));
+            dp.put("address", deviceInfoBean.get("address"));
+            dp.put("description", deviceInfoBean.get("description"));
+            dp.put("update_time", deviceInfoBean.get("update_time"));
+        if (deviceInfoBean.get("module_info").equals("") || deviceInfoBean.get("module_info") == null) {
+            dp.put("module_info", new ArrayList<>());
+        } else {
+            dp.put("module_info", JSONArray.fromObject(deviceInfoBean.get("module_info")));
+        }
+            //redis
         JSONObject deviceJson = JSONObject.parseObject(String.valueOf(redisUtil.hget("message", String.valueOf(id))));
-                if(deviceJson==null){
-                    return Result.ok().msg("the devicejson is null!");
-                }
-                JSONObject sta = JSONObject.parseObject(deviceJson.get("task").toString());
-                JSONObject ser = JSONObject.parseObject(deviceJson.get("sonser").toString());
-                /*4*/
-                List<CustomerDeviceBean> customerDeviceBeans = customerDeviceService.selectByDeviceId(deviceInfoBean.getId());
-                dp.put("customers",customerDeviceBeans);
-                dp.put("id",deviceInfoBean.getId());
-                dp.put("type_id",deviceInfoBean.getTypeId());
-                dp.put("serial",deviceInfoBean.getSerial());
-                dp.put("status",deviceInfoBean.getStatus());
-                dp.put("name",deviceInfoBean.getName());
-                dp.put("scene",deviceInfoBean.getScene());
-                dp.put("models",deviceInfoBean.getModels());
-                dp.put("address",deviceInfoBean.getAddress());
-                dp.put("description",deviceInfoBean.getDescription());
-                dp.put("update_time",deviceInfoBean.getUpdateTime());
-                /*moduleInfo转为JSON对象*/
-                String moduleInfo = deviceInfoBean.getModuleInfo();
-                if(moduleInfo.equals("")||moduleInfo==null){
-                    dp.put("module_info","");
-                }else {
-                    JSONArray jsonObject = JSONArray.fromObject(moduleInfo);
-                    dp.put("module_info",jsonObject);
-                }
-                dp.put("isCharging",ser.get("chargeStatus"));
-                dp.put("battery",ser.get("battery"));
-                dp.put("curr_map_name",sta.get("curr_map"));
-                /*地图关联到ftp服务，后续解决*/
-                // 组装图片路径
-                MapsBean mapsBean = mapsService.selectBySelective(deviceInfoBean.getId(), String.valueOf(sta.get("curr_map")));
-                if(mapsBean!=null){
-                    /*通过比较线上的地图name来获取指定的地图*/
-                    String path = Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
-                    dp.put("curr_map",path);
-                    dp.put("curr_map_id",mapsBean.getId());
-                }else {
-                    dp.put("curr_map","");
-                    dp.put("curr_map_id","");
-                }
-
-                dp.put("last_located_address",JSONObject.parseObject(deviceInfoBean.getLastLocatedAddress()));
-                dp.put("position",deviceJson.get("motion"));
-
+        if(deviceJson!=null) {
+            JSONObject sta = JSONObject.parseObject(deviceJson.get("task").toString());
+            JSONObject ser = JSONObject.parseObject(deviceJson.get("sonser").toString());
+            JSONObject motion = JSONObject.parseObject(deviceJson.get("motion").toString());
+            dp.put("last_located_address",motion);
+            dp.put("position",motion);
+            dp.put("isCharging", ser.get("chargeStatus"));
+            dp.put("battery", ser.get("battery"));
+            //map
+            MapsBean mapsBean = mapsService.selectBySelective(Integer.parseInt(deviceInfoBean.get("device_id").toString()), String.valueOf(sta.get("curr_map")));
+            if (mapsBean != null) {
+                String path = Constants.Global.IMAGES_URL.getValue()  + "/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
+                dp.put("curr_map_name", mapsBean.getName());
+                dp.put("curr_map", path);
+                dp.put("curr_map_id", mapsBean.getId());
+            } else {
+                dp.put("curr_map_name","");
+                dp.put("curr_map", "");
+                dp.put("curr_map_id", -1);
+            }
+        }else {
+            dp.put("isCharging",0);
+            dp.put("battery",0);
+            dp.put("last_located_address",JSONObject.parseObject(deviceInfoBean.get("last_located_address").toString()));
+            dp.put("position",JSONObject.parseObject(deviceInfoBean.get("last_located_address").toString()));
+            dp.put("curr_map_id",-1);
+            dp.put("curr_map_name","");
+            dp.put("curr_map","");//alarm_count
+//            dp.put("alarm_count",0);
+        }
         return Result.ok().data(dp).msg("");
     }
 
@@ -463,12 +445,6 @@ public class DeviceController {
     @PostMapping(value = "/robot/task_status")
     public Result updateDeviceStatus(@RequestParam Map<String,Object> mp) {
         logger.info("更新设备状态："+mp);
-
-        /*{
-        "device_id": 1,
-        "status": 1,
-       "curr_map": ""
-       }*/
         /*步骤
         1.通过device_id获取线上指定设备实时状态
         2.如果设备状态发生改变，则实时更新状态回数据库
@@ -480,15 +456,18 @@ public class DeviceController {
             return  Result.error().msg("the device_id is not exist!");
         }
         /*获取设备对象*/
-        DeviceInfoBean deviceInfoBean = deviceService.selectByPrimaryKey((Integer) json.get("device_id"));
-        if(!jsonObject.get("status").equals(deviceInfoBean.getStatus())||jsonObject.get("status")!=deviceInfoBean.getStatus()){
-            /*更新状态*/
-            deviceInfoBean.setStatus((Integer) jsonObject.get("status"));
-            deviceService.updateByPrimaryKey(deviceInfoBean);
-            return  Result.ok().msg("the status is updated!");
+        Map<String,Object> deviceInfoBean = deviceService.selectByPrimaryKey(Integer.parseInt(json.get("device_id").toString()));
+        if(jsonObject.get("status")==deviceInfoBean.get("status")){
+            return Result.error().msg("The states are the same!");
         }
-        return Result.error().msg("update is wrong!");
+        /*更新状态*/
+        deviceInfoBean.put("status", jsonObject.get("status"));
+        DeviceInfoBean deviceInfo = BeanUtil.copyProperties(deviceInfoBean, DeviceInfoBean.class);
+        deviceInfo.setId(Integer.parseInt(deviceInfoBean.get("device_id").toString()));
+        deviceService.updateByPrimaryKey(deviceInfo);
+        return  Result.ok().msg("the status is updated!");
     }
+
     /**
      * @param
      * @param
@@ -497,9 +476,8 @@ public class DeviceController {
      **/
     @GetMapping(value = "/device/serial/exist")
     public Result isDeviceSerial(String serial) {
-
-        CommnosResult cr=new CommnosResult();
-        DeviceInfoBean deviceInfoBean = deviceService.selectBySerialOrName(serial,"");
+        StringBuilder stringBuilder =new StringBuilder().append("  serial= '" + serial+"'");
+        DeviceInfoBean deviceInfoBean = deviceService.selectBySelective(stringBuilder.toString());
         if(deviceInfoBean==null){
             return Result.error().data("exist",false).msg("the device serial is not exist!");
         }
@@ -513,12 +491,13 @@ public class DeviceController {
      **/
     @GetMapping(value = "/device/name/exist")
     public Result isDeviceName(Integer user_id,String name) {
-        DeviceInfoBean deviceInfoBean = deviceService.selectBySerialOrName("",name);
+        StringBuilder stringBuilder =new StringBuilder().append("  name= '" + name+"'");
+        DeviceInfoBean deviceInfoBean = deviceService.selectBySelective(stringBuilder.toString());
         if(deviceInfoBean!=null){
-            return Result.ok().data("exist",false).msg("");
+            return Result.ok().data("exist",true).msg("");
         }
 
-        return Result.error().data("exist",true).msg("the device name is not exist!");
+        return Result.error().data("exist",false).msg("the device name is not exist!");
     }
 
 
@@ -597,35 +576,48 @@ public class DeviceController {
                 deviceNameSql.append(" and r.device_id="+jsonObj.get("device_id"));
                 PageHelper.offsetPage(startIndex, count);
                 eventsList=eventsService.selectEventsBySelective(deviceNameSql.toString());
-            }/*else if(jsonObj.get("status")!=null){
-                StringBuilder statusSql = new StringBuilder();
-                statusSql.append(" and t.status="+jsonObj.get("status"));
-                PageHelper.offsetPage(startIndex, count);
-                eventsList=eventsService.selectEventsBySelective(statusSql.toString());
-            }*/else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
+            }else if(jsonObj.get("status")!=null){
+                if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
+                    StringBuilder timeSql = new StringBuilder();
+                    timeSql.append(" and t.status=" + jsonObj.get("status")+"  and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                    PageHelper.offsetPage(startIndex, count);
+                    eventsList=eventsService.selectEventsBySelective(timeSql.toString());
+                }else {
+                    StringBuilder statusSql = new StringBuilder();
+                    statusSql.append(" and t.status=" + jsonObj.get("status"));
+                    PageHelper.offsetPage(startIndex, count);
+                    eventsList = eventsService.selectEventsBySelective(statusSql.toString());
+                }
+            }else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
                 StringBuilder timeSql = new StringBuilder();
-                timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
                 PageHelper.offsetPage(startIndex, count);
                 eventsList=eventsService.selectEventsBySelective(timeSql.toString());
             }else {
                 PageHelper.offsetPage(startIndex, count);
                 eventsList=eventsService.selectEvents();
             }
-
         }else {
             if(jsonObj.get("device_id")!=null){
                 StringBuilder deviceNameSql = new StringBuilder();
                 deviceNameSql.append(" and r.device_id="+jsonObj.get("device_id"));
                 PageHelper.offsetPage(startIndex, count);
                 eventsList=eventsService.selectEventsByParams(userId,deviceNameSql.toString());
-            }/*else if(jsonObj.get("status")!=null){
-                StringBuilder statusSql = new StringBuilder();
-                statusSql.append(" and t.status="+jsonObj.get("status"));
-                PageHelper.offsetPage(startIndex, count);
-                eventsList=eventsService.selectEventsByParams(userId,statusSql.toString());
-            }*/else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
+            }else if(jsonObj.get("status")!=null){
+                if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
+                    StringBuilder timeSql = new StringBuilder();
+                    timeSql.append(" and t.status=" + jsonObj.get("status")+" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                    PageHelper.offsetPage(startIndex, count);
+                    eventsList=eventsService.selectEventsByParams(userId,timeSql.toString());
+                }else {
+                    StringBuilder statusSql = new StringBuilder();
+                    statusSql.append(" and t.status=" + jsonObj.get("status"));
+                    PageHelper.offsetPage(startIndex, count);
+                    eventsList = eventsService.selectEventsByParams(userId, statusSql.toString());
+                }
+            }else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
                 StringBuilder timeSql = new StringBuilder();
-                timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d %H:%i:%S')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                timeSql.append(" and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
                 PageHelper.offsetPage(startIndex, count);
                 eventsList=eventsService.selectEventsByParams(userId,timeSql.toString());
             }else {

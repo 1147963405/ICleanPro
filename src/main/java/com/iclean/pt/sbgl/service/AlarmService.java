@@ -17,4 +17,5 @@ public interface AlarmService {
     List<Map<String,Object>> selectAlarmsByParams(@Param("userId") Integer userId,@Param("alarmsParams") String params);
     List<Map<String,Object>> selectAlarms();
     List<Map<String,Object>> selectAlarmsBySelective(@Param("alarmsParams") String params);
+    List<Map<String,Object>> selectAlarmByDeviceId(Integer deviceId);
 }

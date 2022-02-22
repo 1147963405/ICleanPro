@@ -17,7 +17,7 @@
     from tb_device_type
     where id = #{id,jdbcType=INTEGER}
   </select>
-  <select id="selectList" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+  <!--<select id="selectList" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
     select
     <include refid="Base_Column_List" />
     from tb_device_type
@@ -30,6 +30,16 @@
       </if>
     </where>
   </select>
+-->
+
+  <select id="selectDeviceTypeList" resultType="java.util.Map" parameterType="java.lang.Integer" >
+   select id,name,description,type from tb_device_type
+  </select>
+
+
+
+
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
     delete from tb_device_type
     where id = #{id,jdbcType=INTEGER}

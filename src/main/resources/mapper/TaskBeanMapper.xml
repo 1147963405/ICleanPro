@@ -40,6 +40,7 @@
     </where>
   </select>
 
+
   <select id="selectList" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
     select
     <include refid="Base_Column_List" />
@@ -65,6 +66,10 @@
     </if>
   </select>
 
+  <select id="selectTaskByDeviceId" resultType="java.util.Map" parameterType="java.lang.Integer" >
+    select t.id, t.name, t.map_id, m.name as map_name,t.device_id,d.name as device_name,d.serial as device_serial, t.type, t.work_day, t.work_time, t.work_type, t.loop_count, t.parameter, t.work_parts, FROM_UNIXTIME(t.update_time, '%Y-%m-%d %H:%i:%S') as update_time from tb_task t left join tb_maps m on t.map_id=m.id join tb_device_info d on t.device_id=d.id
+ WHERE t.device_id = #{deviceId,jdbcType=INTEGER} order by t.update_time desc
+  </select>
 
   <select id="selectTasksByUserId" resultType="java.util.Map">
 
