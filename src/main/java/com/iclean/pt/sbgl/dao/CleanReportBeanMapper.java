@@ -27,6 +27,7 @@ public interface CleanReportBeanMapper {
     List<Map<String,Object>> selectCleanRportsBySelective(@Param("cleanParams") String cleanParams);//selectCleanRportsTotal
     List<Map<String,Object>> selectCleanRportsTotal();
     List<Map<String,Object>> selectCleanRportsTotalByCustomerId(@Param("customerId") Integer customerId);
+    List<Map<String,Object>> selectCleanAreaAndUseTimeTotal(Integer deviceId);
 //out api
     List<Map<String,Object>> selectClearReportByDeviceId(Integer deviceId);
 }

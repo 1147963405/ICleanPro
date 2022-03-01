@@ -19,6 +19,7 @@ public interface CleanReportService {
     List<Map<String,Object>> selectCleanRportsTotal();
     List<Map<String,Object>> selectCleanRportsTotalByCustomerId(@Param("customerId") Integer customerId);
     List<Map<String,Object>> selectClearReportByDeviceId(Integer deviceId);
+    List<Map<String,Object>> selectCleanAreaAndUseTimeTotal(Integer deviceId);
 
 
 }

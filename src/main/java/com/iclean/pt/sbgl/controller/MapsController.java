@@ -90,9 +90,9 @@ public class MapsController {
         long total = ((com.github.pagehelper.Page) mapsLists).getTotal();
         for (Map<String,Object> map:mapsLists) {
             // 组装图片路径
-            String path = Constants.Global.GLOBAL_STATIC_URL.getValue() + Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" + map.get("device_id") + "/" + map.get("path") + "/map.png";
+            String path = Constants.Global.IMAGES_URL.getValue() + "map/" + map.get("device_id") + "/" + map.get("path") + "/map.png";
           //  组装下载路径
-            String download = Constants.Global.MAP_DOWNLOAD_URL.getValue() + Constants.Global.MAP_DOWNLOAD_PATH.getValue() + "?device_id=" + map.get("device_id") + "&uuid=" + map.get("path");
+            String download = Constants.Global.GLOBAL_URL.getValue() + Constants.Global.MAP_DOWNLOAD_PATH.getValue() + "?device_id=" + map.get("device_id") + "&uuid=" + map.get("path");
             map.put("path",path);
             map.put("download_url",download);
             map.put("user_id",user_id);
@@ -310,7 +310,8 @@ device_id: 22*/
         for (MapsBean mapBean:mapsBeans) {
             if(mapBean.getUuid().equals(uuid)||mapBean.getUuid()==uuid){
 //                组装下载路径
-               download = Constants.Global.MAP_DOWNLOAD_URL.getValue() + Constants.Global.MAP_DOWNLOAD_PATH.getValue() + "?device_id=" + mapBean.getDeviceId() + "&uuid=" + mapBean.getUuid();
+                 download = Constants.Global.GLOBAL_URL.getValue() + Constants.Global.MAP_DOWNLOAD_PATH.getValue() + "?device_id=" + mapBean.getDeviceId() + "&uuid=" + mapBean.getUuid();
+
             }
         }
         return Result.ok().data("download_url",download).msg("");

@@ -84,7 +84,8 @@ public class ApiController {
                     //maps
                     MapsBean mapsBean = mapsService.selectBySelective(Integer.parseInt(map.get("id").toString()), String.valueOf(sta.get("curr_map")));
                     if (mapsBean != null) {
-                        String path = Constants.Global.IMAGES_URL.getValue() + "/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
+//                        String path =Constants.Global.GLOBAL_URL.getValue()+ Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" +mapsBean.getDeviceId()+"/"+ mapsBean.getUuid() + "/map.png";
+                        String path = Constants.Global.IMAGES_URL.getValue() + "map/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
                         map.put("curr_map_id", mapsBean.getId());
                         map.put("curr_map_name", mapsBean.getName());
                         map.put("curr_map", path);
@@ -241,13 +242,14 @@ public class ApiController {
             if(map.get("map_path")==null){
                 map.put("map_path","");
             }else {
-                String path = Constants.Global.IMAGES_URL.getValue()+ "/" + map.get("device_id") + "/" + map.get("map_path") + "/map.png";
-                map.put("map_path",path);
+                String path = Constants.Global.IMAGES_URL.getValue() + "map/" + map.get("device_id") + "/" + map.get("map_path") + "/map.png";
+               map.put("map_path",path);
             }
 
             JSONObject report = JSONObject.parseObject(map.get("report").toString());
             if(report.get("pathFile")!=null){
-                String pathList=Constants.Global.IMAGES_URL.getValue()+"?device_id="+map.get("device_id")+"&file_name="+report.get("pathFile");
+                //http://47.92.192.154:9077/iclean-cloud/data/download/report_path?device_id=51&file_name=03c5fef0-4b02-4b49-a694-b83eb293ef52
+                String pathList=Constants.Global.GLOBAL_URL.getValue()+Constants.Global.REPORT_DOWNLOAD_PATH.getValue()+"?device_id=/"+report.get("device_id")+"&file_name="+report.get("pathFile");
                 report.put("path_list",pathList);
             }else {
                 report.put("path_list",new ArrayList<>());
@@ -284,9 +286,11 @@ public class ApiController {
 
         for (Map<String,Object> map:maps) {
             // 组装图片路径
-            String path = Constants.Global.IMAGES_URL.getValue()+ "/" + map.get("device_id") + "/" + map.get("path") + "/map.png";
+            String path = Constants.Global.IMAGES_URL.getValue() + "map/" +map.get("device_id") + "/" + map.get("path") + "/map.png";
+//            String path =Constants.Global.GLOBAL_URL.getValue()+ Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" +map.get("device_id")+"/"+ map.get("path") + "/map.png";
             //  组装下载路径
-            String download = Constants.Global.IMAGES_URL.getValue()  + "?device_id=" + map.get("device_id") + "&uuid=" + map.get("path");
+            String download = Constants.Global.GLOBAL_URL.getValue() + Constants.Global.MAP_DOWNLOAD_PATH.getValue() + "?device_id=" + map.get("device_id") + "&uuid=" + map.get("path");
+//            String download = Constants.Global.IMAGES_URL.getValue()  + "map/"+ map.get("path");
             map.put("path",path);
             map.put("download_url",download);
         }
@@ -456,7 +460,8 @@ public class ApiController {
             //map
             MapsBean mapsBean = mapsService.selectBySelective(Integer.parseInt(deviceInfoBean.get("device_id").toString()), String.valueOf(sta.get("curr_map")));
             if (mapsBean != null) {
-                String path = Constants.Global.IMAGES_URL.getValue() + "/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
+//                String path =Constants.Global.GLOBAL_URL.getValue()+ Constants.Global.GLOBAL_MAP_PATH.getValue() + "/" +mapsBean.getDeviceId()+"/"+ mapsBean.getUuid() + "/map.png";
+                String path = Constants.Global.IMAGES_URL.getValue() + "map/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
                 dp.put("curr_map_name", mapsBean.getName());
                 dp.put("curr_map", path);
                 dp.put("curr_map_id", mapsBean.getId());

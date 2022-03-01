@@ -99,7 +99,23 @@ select
     from tb_clean_report where device_id in (select device_id from tb_customer_device where customer_id=#{customerId,jdbcType=INTEGER})) r
   </select>
 
-
+ <!-- <select id="selectCleanAreaAndUseTimeTotal" resultType="java.util.Map" parameterType="java.lang.Integer">
+    SELECT sum(clean_area) as clean_area, sum(use_time) as use_time, FROM_UNIXTIME(update_time, '%Y-%m-%d') as update_time FROM tb_clean_report
+     WHERE  DATE_SUB(CURDATE(),INTERVAL 1 WEEK) &lt; FROM_UNIXTIME(update_time, '%Y-%m-%d') and device_id=#{deviceId,jdbcType=INTEGER}
+     group by FROM_UNIXTIME(update_time, '%Y-%m-%d')
+  </select>-->
+  <select id="selectCleanAreaAndUseTimeTotal" resultType="java.util.Map" parameterType="java.lang.Integer">
+    SELECT
+    device_id,
+    FROM_UNIXTIME(update_time, '%Y-%m-%d') as update_time,
+    sum(clean_area) as clean_area,
+    sum(use_time) as use_time,
+    (select sum(t.clean_area) as clean_area from tb_clean_report t where t.device_id=#{deviceId,jdbcType=INTEGER}) as clean_area_total,
+    (select sum(t.use_time) as use_time from tb_clean_report t where t.device_id=#{deviceId,jdbcType=INTEGER}) as use_time_total
+    FROM tb_clean_report
+    WHERE  DATE_SUB(CURDATE(),INTERVAL 1 WEEK) &lt; FROM_UNIXTIME(update_time, '%Y-%m-%d') and device_id=#{deviceId,jdbcType=INTEGER}
+    group by FROM_UNIXTIME(update_time, '%Y-%m-%d')
+  </select>
 
 
 

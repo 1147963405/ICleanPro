@@ -65,34 +65,20 @@ public class Constants {
     }
 
 
-    /*const std::string GLOBAL_MAP_PATH = "data/map";
-
-const std::string GLOBAL_LOGO_DIR = "data/logo";
-
-const std::string GLOBAL_HELPFILE_DIR = "data/helpfile";
-
-const std::string GLOBAL_VEDIO_PROGRAM_DIR = "data/vedioprogram";
-const std::string GLOBAL_HELP_DOC_DIR = "data/helpdoc";
-
-const std::string GLOBAL_OTA_FILE_DIR = "data/ota_update";
-
-const std::string GLOBAL_STATIC_URL = "http://47.92.192.154:9993/"
-http://47.92.192.154:9077/iclean-cloud/data/download/map?device_id=22&uuid=af098920-acaf-4b76-8cfa-e8667ca392c3;*/
-
     public static enum Global{
         GLOBAL_STATIC_URL("GLOBAL_STATIC_URL","http://47.92.192.154:9993"),
+        GLOBAL_URL("GLOBAL_URL","http://47.92.192.154:9077"),
         GLOBAL_MAP_PATH("GLOBAL_MAP_PATH","/data/map"),
-        MAP_DOWNLOAD_URL("MAP_DOWNLOAD_URL","http://47.92.192.154:9077"),
-        IMAGES_URL("MAP_DOWNLOAD_URL","https://iclean.aike1860.com"),
         MAP_DOWNLOAD_PATH("MAP_DOWNLOAD_PATH","/iclean-cloud/data/download/map"),
         REPORT_DOWNLOAD_PATH("REPORT_DOWNLOAD_PATH","/iclean-cloud/data/download/report_path"),
         GLOBAL_LOGO_DIR("GLOBAL_LOGO_DIR","data/logo"),
         GLOBAL_HELPFILE_DIR("GLOBAL_HELPFILE_DIR","data/helpfile"),
         GLOBAL_HELP_DOC_DIR("GLOBAL_HELP_DOC_DIR","data/helpdoc"),
         GLOBAL_OTA_FILE_DIR("GLOBAL_OTA_FILE_DIR","data/ota_update"),
-        GLOBAL_VEDIO_PROGRAM_DIR("GLOBAL_VEDIO_PROGRAM_DIR","data/vedioprogram");
+        GLOBAL_VEDIO_PROGRAM_DIR("GLOBAL_VEDIO_PROGRAM_DIR","data/vedioprogram"),
 
-
+        IMAGES_URL("IMAGES_URL","https://iclean.aike1860.com/"),
+        PATH_URL("PATH_URL","https://iclean.aike1860.com:9079");
 
         Global(String name,String value){
             this.value=value;
@@ -112,10 +98,6 @@ http://47.92.192.154:9077/iclean-cloud/data/download/map?device_id=22&uuid=af098
 
     /*FTP服务连接配置*/
     public static enum FtpServer{
-        /*ftp.server.url=192.1687.11.76
-ftp.server.port=21
-ftp.server.username=iclean
-ftp.server.password=123456*/
         FTP_SERVER_IP("FTP_SERVER_IP","192.168.11.76"),
         FTP_SERVER_PORT("FTP_SERVER_PORT","21"),
         FTP_SERVER_USERNAME("FTP_SERVER_USERNAME","iclean"),

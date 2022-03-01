@@ -10,16 +10,22 @@ import com.iclean.pt.sbgl.bean.ReportJsonBean;
 import com.iclean.pt.sbgl.service.CleanReportService;
 import com.iclean.pt.sbgl.service.MapsService;
 import com.iclean.pt.sbgl.service.PathsService;
-import com.iclean.pt.utils.CommUtil;
-import com.iclean.pt.utils.Constants;
-import com.iclean.pt.utils.Result;
+import com.iclean.pt.utils.*;
 import com.iclean.pt.yhgl.service.CustomerService;
+import net.sf.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +93,7 @@ public class CleanReportController {
                 cleanReportLst=cleanReportService.selectCleanRportsByParams(user_id,deviceNameSql.toString());
             }else if(!jsonObj.get("beginTime").equals("") || !jsonObj.get("endTime").equals("")){
                 StringBuilder timeSql = new StringBuilder();
-                timeSql.append("  and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
+                timeSql.append("  and   FROM_UNIXTIME(r.update_time, '%Y-%m-%d ')  between '"+jsonObj.get("beginTime")+"'  and  '"+jsonObj.get("endTime")+"'");
                 PageHelper.offsetPage(start_index, count);
                 cleanReportLst=cleanReportService.selectCleanRportsByParams(user_id,timeSql.toString());
     }else {
@@ -97,12 +103,12 @@ public class CleanReportController {
 }
 
         for (Map<String,Object> m:cleanReportLst) {
-            String map_path= Constants.Global.IMAGES_URL.getValue()  + "/" + m.get("device_id") + "/" +  m.get("uuid")+ "/map.png";
+            String map_path= Constants.Global.IMAGES_URL.getValue()  + "map/" + m.get("device_id") + "/" +  m.get("uuid")+ "/map.png";
             //http://47.92.192.154:9077/iclean-cloud/data/download/report_path?device_id=209&file_name=7daa2cc5-c4c3-4d71-b8bd-534a2f897051
             JSONObject report = JSONObject.parseObject(m.get("report").toString());
             ReportJsonBean reportJsonBean = BeanUtil.copyProperties(report, ReportJsonBean.class);
             if(reportJsonBean.getPathFile()!=null){
-                String pathList=Constants.Global.IMAGES_URL.getValue()+"?device_id="+m.get("device_id")+"&file_name="+reportJsonBean.getPathFile();
+                String pathList=Constants.Global.PATH_URL.getValue()+Constants.Global.REPORT_DOWNLOAD_PATH.getValue()+"?device_id="+m.get("device_id")+"&file_name="+reportJsonBean.getPathFile();
                 reportJsonBean.setPath_list(pathList);
             }else {
                 reportJsonBean.setPathFile("");
@@ -192,7 +198,7 @@ public class CleanReportController {
      * @param
      * @param
      * @return Result
-     * @description 获取清洁面积与清洁时长
+     * @description 获取所有清洁面积与清洁时长
      **/
     @PostMapping(value = "/clean_report/statistics")
     public Result getCleanAreaTotal(@RequestParam Map<String,Object> cleanReportMap) {
@@ -208,5 +214,93 @@ public class CleanReportController {
         map.put("top_clean_area",cleanReportsTotal.get(0).get("top_clean_area"));
         map.put("top_use_time",cleanReportsTotal.get(0).get("top_use_time"));
         return Result.ok().data("reports",map).msg("");
+    }
+
+
+
+    /**
+     * @param
+     * @param
+     * @return Result
+     * @description 获取指定设备下的清洁面积与清洁时长
+     **/
+    @GetMapping(value = "/clean_report/total")
+    public Result getClearReportInfo(Integer device_id) {
+
+        List<Map<String, Object>> maps = cleanReportService.selectCleanAreaAndUseTimeTotal(device_id);
+        if(maps.size()<=0){
+            return Result.error().msg("the deviceId clean_report is not exist!! ");
+        }
+        JSONObject jsonObject = JSONObject.parseObject(JSONArray.fromObject(maps).get(0).toString());
+        List lst=new ArrayList();
+        for (Map<String,Object> mp:maps) {
+            Map<String,Object> cleanReportMap=new ConcurrentHashMap<>();
+            cleanReportMap.put("update_time",mp.get("update_time"));
+            cleanReportMap.put("clean_area",mp.get("clean_area"));
+            cleanReportMap.put("use_time",mp.get("use_time"));
+            lst.add(cleanReportMap);
+        }
+//        logger.info("获取指定设备下的清洁面积与清洁时长"+maps);
+        Map<String,Object> map=new ConcurrentHashMap<>();
+        map.put("count",maps.size());
+        map.put("device_id",jsonObject.get("device_id"));
+        map.put("clean_area_total",jsonObject.get("clean_area_total"));
+        map.put("use_time_total",jsonObject.get("use_time_total"));
+        map.put("clearReports",lst);
+        return Result.ok().data(map).msg("");
+    }
+
+
+
+
+    /**
+     * @param
+     * @param
+     * @return Result
+     * @description 文件路径下载
+     **/
+    @GetMapping(value = "/data/download/report_path")
+    public JSONArray getDownloadFile(Integer device_id,String file_name) {
+//        logger.info("文件路径下载"+device_id+" : "+file_name);
+        String pathList=Constants.Global.IMAGES_URL.getValue()+device_id+"/report_dir/"+file_name;
+        ByteArrayOutputStream outputStream =null;
+        InputStream inputStream =null;
+        JSONArray jsonArray =null;
+        try{
+            URL url = new URL(pathList);
+            HttpURLConnection uc = (HttpURLConnection) url.openConnection();
+            uc.setDoInput(true);// 设置是否要从 URL 连接读取数据,默认为true
+            uc.connect();
+             inputStream = uc.getInputStream();
+            outputStream = new ByteArrayOutputStream(uc.getContentLength());
+            byte[] temp = new byte[uc.getContentLength()];
+            int size = 0;
+            while ((size = inputStream.read(temp)) != -1) {
+                outputStream.write(temp, 0, size);
+            }
+            if(outputStream==null){
+                return JSONArray.fromObject("[]");
+            }
+            jsonArray = JSONArray.fromObject(outputStream.toString());
+             outputStream.flush();
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally {
+            try {
+                if (outputStream != null) {
+                    outputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return jsonArray;
     }
 }

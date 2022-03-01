@@ -268,7 +268,7 @@ public class DeviceController {
                 //maps
                 MapsBean mapsBean = mapsService.selectBySelective(Integer.parseInt(map.get("id").toString()), String.valueOf(sta.get("curr_map")));
                 if(mapsBean!=null){
-                    String path = Constants.Global.IMAGES_URL.getValue()+ "/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
+                    String path = Constants.Global.IMAGES_URL.getValue()+ "map/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
                     map.put("curr_map_id",mapsBean.getId());
                     map.put("curr_map_name",mapsBean.getName());
                     map.put("curr_map",path);
@@ -414,7 +414,7 @@ public class DeviceController {
             //map
             MapsBean mapsBean = mapsService.selectBySelective(Integer.parseInt(deviceInfoBean.get("device_id").toString()), String.valueOf(sta.get("curr_map")));
             if (mapsBean != null) {
-                String path = Constants.Global.IMAGES_URL.getValue()  + "/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
+                String path = Constants.Global.IMAGES_URL.getValue()  + "map/" + mapsBean.getDeviceId() + "/" + mapsBean.getUuid() + "/map.png";
                 dp.put("curr_map_name", mapsBean.getName());
                 dp.put("curr_map", path);
                 dp.put("curr_map_id", mapsBean.getId());
@@ -633,6 +633,7 @@ public class DeviceController {
         jsonMap.put("events",eventsList);
         return Result.ok().data(jsonMap).msg("");
     }
+
 
     /**
      * @param
