@@ -1,6 +1,8 @@
 package com.iclean.pt.sbgl.bean;
 
-public class MapsBean {
+import java.io.Serializable;
+
+public class MapsBean  implements Serializable {
     private Integer id;
 
     private String uuid;

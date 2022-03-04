@@ -1,4 +1,4 @@
-package com.iclean.pt.apiServer.Controller;
+package com.iclean.apiServer.Controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 @RestController
-@RequestMapping("/apiSever")
+@RequestMapping("/apiServer")
 public class ApiController {
 
     private final static Logger logger = LoggerFactory.getLogger(ApiController.class);
@@ -45,8 +45,7 @@ public class ApiController {
     private DeviceTypeService deviceTypeService;
     @Autowired
     private CustomerDeviceService customerDeviceService;
-    @Autowired
-    private CommUtil commUtil;
+
 
     /**
      * @param customer_id

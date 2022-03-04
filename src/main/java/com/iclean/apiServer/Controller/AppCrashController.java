@@ -1,17 +1,14 @@
-package com.iclean.pt.apiServer.Controller;
+package com.iclean.apiServer.Controller;
 
-import com.iclean.pt.apiServer.bean.AppCrashBean;
-import com.iclean.pt.apiServer.service.AppCrashService;
+
+import com.iclean.apiServer.bean.AppCrashBean;
+import com.iclean.apiServer.service.Impl.AppCrashServiceImp;
 import com.iclean.pt.utils.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +20,7 @@ public class AppCrashController {
  private final static Logger logger = LoggerFactory.getLogger(AppCrashController.class);
 
  @Autowired
-private AppCrashService appCrashService;
+private AppCrashServiceImp appCrashService;
 
     @RequestMapping(value = "/appCrash/info",method = RequestMethod.GET)
     public Result getAppCrashInfo(String serial){

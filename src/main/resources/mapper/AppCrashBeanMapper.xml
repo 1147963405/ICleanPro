@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.iclean.pt.apiServer.dao.AppCrashBeanMapper" >
-  <resultMap id="BaseResultMap" type="com.iclean.pt.apiServer.bean.AppCrashBean" >
+<mapper namespace="com.iclean.apiServer.dao.AppCrashBeanMapper" >
+  <resultMap id="BaseResultMap" type="com.iclean.apiServer.bean.AppCrashBean" >
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="sdk" property="sdk" jdbcType="INTEGER" />
     <result column="brand" property="brand" jdbcType="VARCHAR" />
@@ -30,7 +30,7 @@
     delete from tb_appcrash
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" parameterType="com.iclean.pt.apiServer.bean.AppCrashBean" >
+  <insert id="insert" parameterType="com.iclean.apiServer.bean.AppCrashBean" >
     insert into tb_appcrash (id, sdk, brand, 
       model, versionCode, versionName, 
       versionSystem, versionNav, serial, 
@@ -42,7 +42,7 @@
       #{robotType,jdbcType=INTEGER}, #{robotName,jdbcType=VARCHAR}, #{crashDate,jdbcType=BIGINT}, #{msg,jdbcType=VARCHAR}
       )
   </insert>
-  <insert id="insertSelective" parameterType="com.iclean.pt.apiServer.bean.AppCrashBean" >
+  <insert id="insertSelective" parameterType="com.iclean.apiServer.bean.AppCrashBean" >
     insert into tb_appcrash
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -127,7 +127,7 @@
       </if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.iclean.pt.apiServer.bean.AppCrashBean" >
+  <update id="updateByPrimaryKeySelective" parameterType="com.iclean.apiServer.bean.AppCrashBean" >
     update tb_appcrash
     <set >
       <if test="sdk != null" >
@@ -169,7 +169,7 @@
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.iclean.pt.apiServer.bean.AppCrashBean" >
+  <update id="updateByPrimaryKey" parameterType="com.iclean.apiServer.bean.AppCrashBean" >
     update tb_appcrash
     set sdk = #{sdk,jdbcType=INTEGER},
       brand = #{brand,jdbcType=VARCHAR},

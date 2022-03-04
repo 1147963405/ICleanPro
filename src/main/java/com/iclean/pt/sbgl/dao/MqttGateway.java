@@ -4,7 +4,7 @@ import org.springframework.integration.annotation.MessagingGateway;
 import org.springframework.integration.mqtt.support.MqttHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 
-@MessagingGateway(defaultRequestChannel = "mqttOutboundChannel")
+//@MessagingGateway(defaultRequestChannel = "mqttOutboundChannel")
 public interface MqttGateway {
 
     /**
@@ -13,7 +13,7 @@ public interface MqttGateway {
      * @param topic 主题
      * @param message 消息主体
      */
-    void publishMqttMessageWithTopic(String message, @Header(MqttHeaders.TOPIC) String topic);
+//    void publishMqttMessageWithTopic(String message, @Header(MqttHeaders.TOPIC) String topic);
 
     /**
      * 发送信息到MQTT服务器
@@ -24,7 +24,7 @@ public interface MqttGateway {
      * 2 多了一次去重的动作，确保订阅者收到的消息有一次。
      * @param message 消息主体
      */
-    void publishMqttMessageWithTopic(String message, @Header(MqttHeaders.TOPIC) String topic,@Header(MqttHeaders.QOS) int qos);
+//    void publishMqttMessageWithTopic(String message, @Header(MqttHeaders.TOPIC) String topic,@Header(MqttHeaders.QOS) int qos);
 }
 
 

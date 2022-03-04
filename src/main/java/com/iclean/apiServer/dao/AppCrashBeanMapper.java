@@ -1,6 +1,6 @@
-package com.iclean.pt.apiServer.dao;
+package com.iclean.apiServer.dao;
 
-import com.iclean.pt.apiServer.bean.AppCrashBean;
+import com.iclean.apiServer.bean.AppCrashBean;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

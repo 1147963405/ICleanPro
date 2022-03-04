@@ -3,7 +3,6 @@ package com.iclean.pt.sbgl.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.google.gson.Gson;
-import com.iclean.pt.apiServer.Controller.ApiController;
 import com.iclean.pt.sbgl.bean.MapsBean;
 import com.iclean.pt.sbgl.bean.PathsBean;
 import com.iclean.pt.sbgl.bean.PositionBean;
@@ -27,7 +26,7 @@ import static java.lang.Integer.parseInt;
 @RestController
 public class MapsController {
 
-    private final static Logger logger = LoggerFactory.getLogger(ApiController.class);
+    private final static Logger logger = LoggerFactory.getLogger(MapsController.class);
 
     @Autowired
     private MapsService mapsService;

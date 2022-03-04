@@ -1,0 +1,45 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo
+http://code.alibabatech.com/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+    <context:property-placeholder location="classpath:application.properties"/>
+
+
+    <!--应用名与注册中心地址写在consumer.xml中-->
+    <!-- 1.提供方应用名-->
+    <dubbo:application name="api_service_provider" />
+    <!-- 2.指定注册中心地址 -->
+    <dubbo:registry address="zookeeper://47.92.192.154:2181"/>
+
+    <!--3.提供方端口-->
+    <!--<dubbo:protocol name="dubbo" port="40880" payload="100000000"/>-->
+
+    <!--使用 dubbo 协议实现定义好的 api.PermissionService 接口-->
+    <dubbo:service interface="com.iclean.pt.sbgl.service.AlarmService" ref="alarmService" protocol="dubbo" />
+    <!--具体实现该接口的 bean-->
+    <bean id="alarmService" class="com.iclean.pt.sbgl.service.Imp.AlarmServiceImpl"/>
+    <!--com.iclean.pt.sbgl.service.TaskService-->
+    <dubbo:service interface="com.iclean.pt.sbgl.service.TaskService" ref="taskService" protocol="dubbo" />
+    <bean id="taskService" class="com.iclean.pt.sbgl.service.Imp.TaskServiceImpl"/>
+    <!--mapsService-->
+    <dubbo:service interface="com.iclean.pt.sbgl.service.MapsService" ref="mapsService" protocol="dubbo" />
+    <bean id="mapsService" class="com.iclean.pt.sbgl.service.Imp.MapsServiceImpl"/>
+    <!--eventsService-->
+    <dubbo:service interface="com.iclean.pt.sbgl.service.EventsService" ref="eventsService" protocol="dubbo" />
+    <bean id="eventsService" class="com.iclean.pt.sbgl.service.Imp.EventsServiceImpl"/>
+    <!--cleanReportService-->
+    <dubbo:service interface="com.iclean.pt.sbgl.service.CleanReportService" ref="cleanReportService" protocol="dubbo" />
+    <bean id="cleanReportService" class="com.iclean.pt.sbgl.service.Imp.CleanReportServiceImpl"/>
+    <!--deviceTypeService-->
+    <dubbo:service interface="com.iclean.pt.yhgl.service.DeviceTypeService" ref="deviceTypeService" protocol="dubbo" />
+    <bean id="deviceTypeService" class="com.iclean.pt.yhgl.service.Imp.DeviceTypeImp"/>
+    <!--customerDeviceService-->
+    <dubbo:service interface="com.iclean.pt.yhgl.service.CustomerDeviceService" ref="customerDeviceService" protocol="dubbo" />
+    <bean id="customerDeviceService" class="com.iclean.pt.yhgl.service.Imp.CustomerDeviceServiceImp"/>
+    <!--deviceService-->
+    <dubbo:service interface="com.iclean.pt.yhgl.service.DeviceService" ref="deviceService" protocol="dubbo" />
+    <bean id="deviceService" class="com.iclean.pt.yhgl.service.Imp.DeviceServiceImp"/>
+</beans>
+

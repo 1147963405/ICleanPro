@@ -7,7 +7,6 @@ import com.iclean.pt.sbgl.service.AlarmService;
 import com.iclean.pt.utils.CommUtil;
 import com.iclean.pt.utils.Result;
 import com.iclean.pt.yhgl.service.CustomerService;
-import io.swagger.annotations.Api;
 import net.sf.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
