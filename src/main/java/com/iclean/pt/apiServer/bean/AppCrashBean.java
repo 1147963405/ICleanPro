@@ -1,4 +1,4 @@
-package com.iclean.apiServer.bean;
+package com.iclean.pt.apiServer.bean;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

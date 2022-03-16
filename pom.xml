@@ -159,7 +159,7 @@
 
     </dependencies>
     <build>
-        <finalName>iclean9079</finalName>
+        <finalName>iclean9082</finalName>
         <plugins>
             <!--mybatis代码自动构造器-->
             <plugin>

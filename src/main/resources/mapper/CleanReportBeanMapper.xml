@@ -119,6 +119,39 @@ select
 
 
 
+  <select id="selectCleanReportToDay" resultType="java.util.Map" parameterType="java.lang.Integer">
+    select SUBSTRING(t.update_time,-5) as dayToWeek,t.clean_area,t.use_time from (SELECT
+    FROM_UNIXTIME(update_time, '%Y-%m-%d') as update_time,
+    sum(clean_area) as clean_area,
+    TRUNCATE(sum(use_time)/3600, 2) as use_time
+    FROM tb_clean_report
+    WHERE  DATE_SUB(CURDATE(),INTERVAL 1 week) &lt; FROM_UNIXTIME(update_time, '%Y-%m-%d')
+    group by FROM_UNIXTIME(update_time, '%Y-%m-%d')) t
+  </select>
+
+
+ <!-- <select id="selectCleanReportToWeek" resultType="java.util.Map" parameterType="java.lang.Integer">
+    SELECT
+    FROM_UNIXTIME(update_time, '%Y-%m-%d') as update_time,
+    sum(clean_area) as clean_area,
+    sum(use_time) as use_time
+    FROM tb_clean_report
+    WHERE  DATE_SUB(CURDATE(),INTERVAL 1 week) &lt; FROM_UNIXTIME(update_time, '%Y-%m-%d')
+    group by FROM_UNIXTIME(update_time, '%Y-%m-%d')
+  </select>-->
+
+  <select id="selectCleanReportToMonth" resultType="java.util.Map" parameterType="java.lang.String">
+
+    select SUBSTRING(t.update_time,-2) as monthToYear,t.clean_area,t.use_time from (
+    SELECT
+    FROM_UNIXTIME(update_time, '%Y-%m') as update_time,
+    sum(clean_area) as clean_area,
+    TRUNCATE(sum(use_time)/3600, 2) as use_time
+    FROM tb_clean_report
+    WHERE  FROM_UNIXTIME(update_time, '%Y-%m-%d') like CONCAT( '', DATE_FORMAT(NOW(), '%Y'), '%')
+    group by FROM_UNIXTIME(update_time, '%Y-%m')) t
+  </select>
+
 
 
 

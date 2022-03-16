@@ -28,6 +28,9 @@ public interface CleanReportBeanMapper {
     List<Map<String,Object>> selectCleanRportsTotal();
     List<Map<String,Object>> selectCleanRportsTotalByCustomerId(@Param("customerId") Integer customerId);
     List<Map<String,Object>> selectCleanAreaAndUseTimeTotal(Integer deviceId);
+    List<Map<String,Object>> selectCleanReportToDay();
+    List<Map<String,Object>> selectCleanReportToWeek();
+    List<Map<String,Object>> selectCleanReportToMonth();
 //out api
     List<Map<String,Object>> selectClearReportByDeviceId(Integer deviceId);
 }

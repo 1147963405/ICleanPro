@@ -216,6 +216,76 @@ public class CleanReportController {
         return Result.ok().data("reports",map).msg("");
     }
 
+    /**
+     * @param
+     * @param
+     * @return Result
+     * @description 获取最近一周所有设备下的清洁面积或清洁时长
+     **/
+    @GetMapping(value = "/clean_report/toWeek")
+    public Result getCleanInfoToWeek(Integer count) {
+
+        List<Map<String, Object>> maps = cleanReportService.selectCleanReportToDay();
+        List lst=new ArrayList();
+        switch (count){
+            case 1:
+                for (Map<String, Object> m : maps) {
+                    Map<String,Object> cleanAreaMap=new ConcurrentHashMap<>();
+                    cleanAreaMap.put("dayToWeek",m.get("dayToWeek"));
+                    cleanAreaMap.put("clean_area",m.get("clean_area"));
+                    lst.add(cleanAreaMap);
+                }
+                break;
+            case 2:
+                for (Map<String, Object> m : maps) {
+                    Map<String,Object> useTimeMap=new ConcurrentHashMap<>();
+                    useTimeMap.put("dayToWeek",m.get("dayToWeek"));
+                    useTimeMap.put("use_time",m.get("use_time"));
+                    lst.add(useTimeMap);
+                }
+                break;
+        }
+        Map<String,Object> map=new ConcurrentHashMap<>();
+        map.put("count",maps.size());
+        map.put("clearReportToWeek",lst);
+        return Result.ok().data(map).msg("");
+    }
+
+    /**
+     * @param
+     * @param
+     * @return Result
+     * @description 获取当前月份所有设备下的清洁面积或清洁时长
+     **/
+    @GetMapping(value = "/clean_report/toMonth")
+    public Result getCleanInfoToMonth(String date,Integer count) {
+
+        List<Map<String, Object>> maps = cleanReportService.selectCleanReportToMonth();
+        List lst=new ArrayList();
+        switch (count){
+            case 1:
+                for (Map<String, Object> m : maps) {
+                    Map<String,Object> cleanAreaMap=new ConcurrentHashMap<>();
+                    cleanAreaMap.put("monthToYear",m.get("monthToYear"));
+                    cleanAreaMap.put("clean_area",m.get("clean_area"));
+                    lst.add(cleanAreaMap);
+                }
+                break;
+            case 2:
+                for (Map<String, Object> m : maps) {
+                    Map<String,Object> useTimeMap=new ConcurrentHashMap<>();
+                    useTimeMap.put("monthToYear",m.get("monthToYear"));
+                    useTimeMap.put("use_time",m.get("use_time"));
+                    lst.add(useTimeMap);
+                }
+                break;
+        }
+//        logger.info("获取指定设备下的清洁面积与清洁时长"+maps);
+        Map<String,Object> map=new ConcurrentHashMap<>();
+        map.put("count",maps.size());
+        map.put("clearReportToMonth",lst);
+        return Result.ok().data(map).msg("");
+    }
 
 
     /**

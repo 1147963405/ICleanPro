@@ -70,5 +70,20 @@ public class CleanReportServiceImpl implements CleanReportService {
         return cleanReportBeanMapper.selectCleanAreaAndUseTimeTotal(deviceId);
     }
 
+    @Override
+    public List<Map<String, Object>> selectCleanReportToDay() {
+        return cleanReportBeanMapper.selectCleanReportToDay();
+    }
+
+    @Override
+    public List<Map<String, Object>> selectCleanReportToWeek() {
+        return cleanReportBeanMapper.selectCleanReportToWeek();
+    }
+
+    @Override
+    public List<Map<String, Object>> selectCleanReportToMonth() {
+        return cleanReportBeanMapper.selectCleanReportToMonth();
+    }
+
 
 }
